@@ -56,8 +56,6 @@ app.get('/persons', async (req: Request, res: Response) => {
 });
 
 app.get('/person/:personId/movies', async (req: Request, res: Response) => {
-    console.log(req.params.personId)
-
     try {
         const { mongoClient } = await connectToDB();
 
@@ -68,7 +66,7 @@ app.get('/person/:personId/movies', async (req: Request, res: Response) => {
 
         const personMovies = await db.collection('persons-movies').find({ "person_id": req.params.personId }).toArray();
 
-        const movieIds = personMovies.map(personMovie => new ObjectId(personMovie.movie_id));
+        const movieIds = personMovies.map(personMovie => ObjectId.createFromHexString(personMovie.movie_id));
 
         const movies = await db.collection('movies').find({ "_id": { "$in": movieIds } }).toArray();
 
