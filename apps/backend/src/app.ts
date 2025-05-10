@@ -29,26 +29,7 @@ app.get('/persons', async (req: Request, res: Response) => {
             .find({})
             .toArray(); 
 
-        const TMDB_SEARCH_URL = 'https://api.themoviedb.org/3/search/person';
-
-        const data = await Promise.all(
-            persons.map(async (person) => {
-                if (person.name) {
-                    const response = await fetch(`${TMDB_SEARCH_URL}?query=${person.name}`, {
-                        headers: {
-                            Authorization: `Bearer ${process.env.TMDB_API_KEY}`,
-                        },
-                    });
-                    const result: any = await response.json();
-                    if (result.results && result.results.length > 0) {
-                        person.profile_url = `${TMDB_IMAGE_BASE}${result.results[0].profile_path}`;
-                    }
-                }
-                return person;
-            })
-        );
-
-        res.send(data);
+        res.send(persons);
     } catch (error) {
         console.error('Error', error);
         res.status(500).json({ error: 'Internal server error' });
