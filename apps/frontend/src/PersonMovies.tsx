@@ -1,9 +1,10 @@
 import { SimpleGrid } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
+import type { Movie } from "@video-club/types";
 
 export default function PersonMovies() {
-    const [movies, setMovies] = useState<any>([]);
+    const [movies, setMovies] = useState<Movie[]>([]);
     const { personId } = useParams();
 
     useEffect(() => {

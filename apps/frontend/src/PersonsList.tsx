@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { SimpleGrid } from "@chakra-ui/react";
 import PersonCard from "./PersonCard";
 import { Link } from "react-router";
+import type { Person } from "@video-club/types";
 
 export default function PersonsList() {
-    const [persons, setPersons] = useState([]);
+    const [persons, setPersons] = useState<Person[]>([]);
 
     useEffect(() => {
       const fetchData = async () => {
