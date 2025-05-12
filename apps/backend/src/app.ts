@@ -14,8 +14,6 @@ app.use(cors());
 
 app.use(bodyParser.json());
 
-const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
-
 app.get('/persons', async (req: Request, res: Response) => {
     try {
         const { mongoClient } = await connectToDB();
@@ -51,26 +49,7 @@ app.get('/person/:personId/movies', async (req: Request, res: Response) => {
 
         const movies = await db.collection('movies').find({ "_id": { "$in": movieIds } }).toArray();
 
-        const TMDB_SEARCH_URL = 'https://api.themoviedb.org/3/search/movie';
-        
-        const data = await Promise.all(
-            movies.map(async (movie) => {
-                if (movie.name) {
-                    const response = await fetch(`${TMDB_SEARCH_URL}?query=${movie.name}`, {
-                        headers: {
-                            Authorization: `Bearer ${process.env.TMDB_API_KEY}`,
-                        },
-                    });
-                    const result: any = await response.json();
-                    if (result.results && result.results.length > 0) {
-                        movie.poster_url = `${TMDB_IMAGE_BASE}${result.results[0].poster_path}`;
-                    }
-                }
-                return movie;
-            })
-        );
-
-        res.send(data);
+        res.send(movies);
     } catch (error) {
         console.error('Error', error);
         res.status(500).json({ error: 'Internal server error' });
