@@ -4,6 +4,7 @@ export interface Person {
     date: string;
     video: string;
     profile_url: string;
+    show?: boolean;
 }
 
 export interface Movie {

@@ -24,7 +24,7 @@ app.get('/persons', async (req: Request, res: Response) => {
         const db = mongoClient.db('video-club');
         const persons = await db
             .collection('persons')
-            .find({})
+            .find({show: true})
             .toArray(); 
 
         res.send(persons);
