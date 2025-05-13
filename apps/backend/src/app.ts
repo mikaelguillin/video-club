@@ -25,6 +25,7 @@ app.get('/persons', async (req: Request, res: Response) => {
         const persons = await db
             .collection('persons')
             .find({show: true})
+            .sort({ date: -1 })
             .toArray(); 
 
         res.send(persons);
