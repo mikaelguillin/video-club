@@ -35,6 +35,25 @@ app.get('/persons', async (req: Request, res: Response) => {
     }
 });
 
+app.get('/person/:personId', async (req: Request, res: Response) => {
+    try {
+        const { mongoClient } = await connectToDB();
+
+        if (!mongoClient)
+            throw new Error('An error occured while connecting to database');
+
+        const db = mongoClient.db('video-club');
+        const person = await db
+            .collection('persons')
+            .findOne({"_id": ObjectId.createFromHexString(req.params.personId)}); 
+
+        res.send(person);
+    } catch (error) {
+        console.error('Error', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 app.get('/person/:personId/movies', async (req: Request, res: Response) => {
     try {
         const { mongoClient } = await connectToDB();
