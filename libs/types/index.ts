@@ -13,4 +13,5 @@ export interface Movie {
     director: string;
     year: number;
     poster_url: string;
+    background_url: string;
 }
