@@ -67,7 +67,7 @@ app.get('/person/:personId/movies', async (req: Request, res: Response) => {
 
         const movieIds = personMovies.map(personMovie => ObjectId.createFromHexString(personMovie.movie_id));
 
-        const movies = await db.collection('movies').find({ "_id": { "$in": movieIds } }).toArray();
+        const movies = await db.collection('movies').find({ "_id": { "$in": movieIds } }).sort({name: 1}).toArray();
 
         res.send(movies);
     } catch (error) {
