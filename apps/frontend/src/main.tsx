@@ -12,7 +12,7 @@ import './index.css';
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
-      <Provider>
+      <Provider enableSystem={false}>
         <Layout>
           <Routes>
             <Route path="/" element={<PersonsList />} />
