@@ -11,7 +11,7 @@
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 20px;
 }
 
 img { max-width: 100%; }
@@ -46,6 +46,11 @@ img { max-width: 100%; }
 .person-card:hover {
   box-shadow: 0 0 5px 5px rgba(255, 255, 255, 0.3);
   transform: translateY(-5px);
+}
+
+.movie-card img {
+  aspect-ratio: 2 / 3;
+  width: 100%;
 }
 
 .card-info {

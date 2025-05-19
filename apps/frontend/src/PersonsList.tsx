@@ -24,7 +24,7 @@ export default function PersonsList() {
     return (
       <SimpleGrid
         columns={{
-          base: 1,
+          base: 2,
           sm: 2,
           md: 3,
           lg: 4,

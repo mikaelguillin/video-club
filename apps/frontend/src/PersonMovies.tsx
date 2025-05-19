@@ -71,7 +71,7 @@ export default function PersonMovies() {
 
                 <SimpleGrid
                     columns={{
-                        base: 1,
+                        base: 2,
                         sm: 2,
                         md: 3,
                         lg: 4,
@@ -86,10 +86,8 @@ export default function PersonMovies() {
                                 <Image
                                     src={movie.poster_url}
                                     alt={movie.name}
-                                    height="300px"
-                                    width="100%"
                                 />
-                                <div className="card-info">
+                                <Box className="card-info" hideBelow="sm">
                                     <Text
                                         fontWeight="bold"
                                         style={{
@@ -100,7 +98,7 @@ export default function PersonMovies() {
                                         title={movie.name}
                                     >{movie.name}</Text>
                                     <Text color="#555">({movie.year})</Text>
-                                </div>
+                                </Box>
                             </div>
                         ))}
                     </>
