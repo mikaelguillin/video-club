@@ -1,13 +1,13 @@
-import { StrictMode } from 'react'
+import { lazy, StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Provider } from "@/components/ui/provider"
 import { BrowserRouter, Route, Routes } from 'react-router'
-import PersonMovies from './PersonMovies.tsx'
 import Layout from './Layout.tsx'
-import PersonsList from './PersonsList.tsx'
 
 import './index.css';
 
+const PersonsList = lazy(() => import('./PersonsList.tsx'))
+const PersonMovies = lazy(() => import('./PersonMovies.tsx'))
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
