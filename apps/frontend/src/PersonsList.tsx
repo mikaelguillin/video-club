@@ -1,52 +1,53 @@
-import { useState, useEffect } from "react";
-import { SimpleGrid, Skeleton } from "@chakra-ui/react";
-import PersonCard from "./PersonCard";
 import { Link } from "react-router";
 import type { Person } from "@video-club/types";
+import GridList from "./GridList";
+import { Box, Image, Skeleton, Text } from "@chakra-ui/react";
 
 export default function PersonsList() {
-    const [persons, setPersons] = useState<Person[]>([]);
-
-    useEffect(() => {
-      const fetchData = async () => {
-        try {
-          const response = await fetch(`${import.meta.env.VITE_API_URL}/persons`);
-          const personsData = await response.json();
-          setPersons(personsData);
-        } catch (error) {
-          console.error('Error fetching data:', error);
-        }
-      };
-  
-      fetchData();
-    }, [])
-  
+  const renderPerson = (
+    person: Person,
+    index: number,
+    isImageLoaded: boolean,
+    handleImageLoad: (id: string) => void
+  ) => {
     return (
-      <SimpleGrid
-        columns={{
-          base: 2,
-          sm: 2,
-          md: 3,
-          lg: 4,
-          xl: 5,
-        }}
-        gap="20px"
-      >
-        {persons.length ? (
-          <>
-            {persons.map((person, index) => (
-              <Link to={`/person/${person._id}/movies`} key={index}>
-                <PersonCard person={person} />
-              </Link>
-            ))}
-          </>
-        ) : (
-          <>
-            {Array.from({ length: 15 }, (_, index) => (
-                <Skeleton height="300px" key={index} />
-            ))}
-          </>
-        )}
-      </SimpleGrid>
+      <Link to={`/person/${person._id}/movies`} key={index}>
+        <Skeleton
+          key={index}
+          height={!isImageLoaded ? "350px" : "auto"}
+          loading={!isImageLoaded}
+        >
+          <div
+            className="person-card"
+            style={{
+              opacity: isImageLoaded ? 1 : 0,
+              transform: `translateY(${isImageLoaded ? "0" : "10px"})`,
+              transition:
+                "opacity 0.3s ease-in-out, transform 0.3s ease-in-out",
+              position: "relative",
+              zIndex: isImageLoaded ? 1 : 0,
+            }}
+          >
+            <Image
+              src={person.profile_url}
+              alt={person.name}
+              onLoad={() => handleImageLoad(person._id)}
+            />
+            <Box className="card-info">
+              <Text>{person.name}</Text>
+            </Box>
+          </div>
+        </Skeleton>
+      </Link>
     );
-  }
+  };
+
+  return (
+    <GridList<Person>
+      fetchUrl={`${import.meta.env.VITE_API_URL}/persons`}
+      renderItem={renderPerson}
+      loadingSkeletonCount={15}
+      loadingSkeletonHeight="300px"
+    />
+  );
+}

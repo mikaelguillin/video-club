@@ -22,13 +22,34 @@ app.get('/persons', async (req: Request, res: Response) => {
             throw new Error('An error occured while connecting to database');
 
         const db = mongoClient.db('video-club');
+
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const skip = (page - 1) * limit;
+
+        // Get total count of documents
+        const total = await db
+            .collection('persons')
+            .countDocuments({ show: true });
+
+        // Get paginated results
         const persons = await db
             .collection('persons')
-            .find({show: true})
+            .find({ show: true })
             .sort({ date: -1 })
+.skip(skip)
+            .limit(limit)
             .toArray(); 
 
-        res.send(persons);
+        res.send({
+            items: persons,
+            pagination: {
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit),
+            }
+        });
     } catch (error) {
         console.error('Error', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -63,11 +84,64 @@ app.get('/person/:personId/movies', async (req: Request, res: Response) => {
 
         const db = mongoClient.db('video-club');
 
-        const personMovies = await db.collection('persons-movies').find({ "person_id": req.params.personId }).toArray();
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const skip = (page - 1) * limit;
 
+        const personMovies = await db.collection('persons-movies').find({ "person_id": req.params.personId }).toArray();
         const movieIds = personMovies.map(personMovie => ObjectId.createFromHexString(personMovie.movie_id));
 
-        const movies = await db.collection('movies').find({ "_id": { "$in": movieIds } }).sort({name: 1}).toArray();
+        const total = movieIds.length;
+
+        const paginatedMovieIds = movieIds.slice(skip, skip + limit);
+
+        const movies = await db.collection('movies').find({ "_id": { "$in": paginatedMovieIds } }).toArray();
+
+        res.send({
+            items: movies,
+            pagination: {
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit),
+            }
+        });
+    } catch (error) {
+        console.error('Error', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+app.get('/movies', async (req: Request, res: Response) => {
+    try {
+        const { mongoClient } = await connectToDB();
+
+        if (!mongoClient)
+            throw new Error('An error occured while connecting to database');
+
+        const db = mongoClient.db('video-club');
+        const persons = await db
+            .collection('movies')
+            .find({})
+            .sort({ name: -1 })
+            .toArray();
+
+        res.send(persons);
+    } catch (error) {
+        console.error('Error', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+app.get('/randommovie', async (req: Request, res: Response) => {
+    try {
+        const { mongoClient } = await connectToDB();
+
+        if (!mongoClient)
+            throw new Error('An error occured while connecting to database');
+
+        const db = mongoClient.db('video-club');
+        const [randomMovie] = await db.collection('movies').aggregate([{ $sample: { size: 1}).toArray();
 
         res.send(movies);
     } catch (error) {

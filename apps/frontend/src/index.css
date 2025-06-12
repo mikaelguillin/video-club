@@ -45,7 +45,7 @@ img { max-width: 100%; }
 .movie-card:hover,
 .person-card:hover {
   box-shadow: 0 0 5px 5px rgba(255, 255, 255, 0.3);
-  transform: translateY(-5px);
+  transform: translateY(-5px) !important;
 }
 
 .movie-card img {
@@ -73,6 +73,13 @@ img { max-width: 100%; }
 .person-movies-header .person-name {
   display: flex;
   align-items: center;
+}
+
+.movie-title {
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .footer {

@@ -14,4 +14,5 @@ export interface Movie {
     year: number;
     poster_url: string;
     background_url: string;
+    title: Record<string, string>;
 }
