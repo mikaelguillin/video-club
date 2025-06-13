@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import useDebounce from "./utils/useDebounce";
+import useDebounce from "../utils/useDebounce";
 import { SimpleGrid, Skeleton } from "@chakra-ui/react";
 
 interface PaginationResponse<T> {
@@ -99,14 +99,13 @@ export default function GridList<T extends { _id: string }>({
 
     // Fetch initial data
     fetchItems(1);
-}, []);
+  }, []);
 
   useEffect(() => {
     if (!isInitialLoad && page > 1) {
       fetchItems(page);
     }
-}, [page, isInitialLoad]);
-
+  }, [page, isInitialLoad]);
 
   const handleImageLoad = (itemId: string) => {
     setLoadedImages((prev) => ({
@@ -129,8 +128,7 @@ export default function GridList<T extends { _id: string }>({
       {!items.length &&
         Array.from({ length: loadingSkeletonCount }).map((_, index) => (
           <Skeleton key={index} height={loadingSkeletonHeight} />
-        ))
-    }
+        ))}
       {items.map((item, index) => {
         const isImageLoaded = loadedImages[item._id];
         return renderItem(item, index, isImageLoaded, handleImageLoad);
