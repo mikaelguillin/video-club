@@ -141,9 +141,9 @@ app.get('/randommovie', async (req: Request, res: Response) => {
             throw new Error('An error occured while connecting to database');
 
         const db = mongoClient.db('video-club');
-        const [randomMovie] = await db.collection('movies').aggregate([{ $sample: { size: 1}).toArray();
+        const [randomMovie] = await db.collection('movies').aggregate([{ $sample: { size: 1} }]).toArray();
 
-        res.send(movies);
+        res.send(randomMovie);
     } catch (error) {
         console.error('Error', error);
         res.status(500).json({ error: 'Internal server error' });
