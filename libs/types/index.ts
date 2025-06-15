@@ -13,6 +13,7 @@ export interface Movie {
     director: string;
     year: number;
     poster_url: string;
+    backdrop_url: string;
     background_url: string;
     title: Record<string, string>;
     overview: Record<string, string>;

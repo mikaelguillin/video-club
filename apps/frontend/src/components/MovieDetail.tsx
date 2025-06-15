@@ -1,3 +1,4 @@
+import { TMDB_IMAGE_BASE } from "@/constants";
 import { Box, Button, Heading, Image, Skeleton, Text } from "@chakra-ui/react"
 import type { Movie } from "@video-club/types";
 import { useEffect, useState } from "react"
@@ -37,17 +38,15 @@ export default function MovieDetail() {
             >
                 ‹ Back
             </Button>
-            <Box className="movie-detail-card" style={{backgroundImage: `url(${movie.poster_url})`}}>
+            <Box className="movie-detail-card" style={{backgroundImage: `url(${TMDB_IMAGE_BASE}${movie.backdrop_url || movie.poster_url})`}}>
                 <Box className="movie-detail-card-inner" display={{mdTo2xl: 'flex'}}>
                     <Skeleton
                         loading={!isLoadedImage}
-                        maxWidth="100%"
-                        height={!isLoadedImage ? "750px" : "auto"}
                         width={{base: '60%', md: '500px'}}
                         p={5}
                     >
                         <Image
-                            src={movie.poster_url}
+                            src={`${TMDB_IMAGE_BASE}${movie.poster_url}`}
                             alt={`Poster of ${movie.name}`}
                             onLoad={handleImageLoad}
                             borderRadius="10px"

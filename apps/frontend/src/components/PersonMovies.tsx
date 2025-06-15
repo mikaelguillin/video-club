@@ -4,6 +4,7 @@ import { Link, useParams } from "react-router";
 import type { Movie, Person } from "@video-club/types";
 import PersonMoviesHeader from "./PersonMoviesHeader";
 import GridList from "./GridList";
+import { TMDB_IMAGE_BASE } from "@/constants";
 
 export default function PersonMovies() {
   const { personId } = useParams();
@@ -51,7 +52,7 @@ export default function PersonMovies() {
             }}
           >
             <Image
-              src={movie.poster_url}
+              src={`${TMDB_IMAGE_BASE}${movie.poster_url}`}
               alt={movieTitle}
               onLoad={() => handleImageLoad(movie._id)}
             />
