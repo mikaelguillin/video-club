@@ -11,34 +11,34 @@ export default function PersonsList() {
     handleImageLoad: (id: string) => void
   ) => {
     return (
-      <Link to={`/person/${person._id}/movies`} key={index}>
         <Skeleton
           key={index}
           height={!isImageLoaded ? "350px" : "auto"}
           loading={!isImageLoaded}
         >
-          <div
-            className="person-card"
-            style={{
-              opacity: isImageLoaded ? 1 : 0,
-              transform: `translateY(${isImageLoaded ? "0" : "10px"})`,
-              transition:
-                "opacity 0.3s ease-in-out, transform 0.3s ease-in-out",
-              position: "relative",
-              zIndex: isImageLoaded ? 1 : 0,
-            }}
-          >
-            <Image
-              src={person.profile_url}
-              alt={person.name}
-              onLoad={() => handleImageLoad(person._id)}
-            />
-            <Box className="card-info">
-              <Text>{person.name}</Text>
-            </Box>
-          </div>
+          <Link to={`/person/${person._id}/movies`}>
+            <div
+              className="person-card"
+              style={{
+                opacity: isImageLoaded ? 1 : 0,
+                transform: `translateY(${isImageLoaded ? "0" : "10px"})`,
+                transition:
+                  "opacity 0.3s ease-in-out, transform 0.3s ease-in-out",
+                position: "relative",
+                zIndex: isImageLoaded ? 1 : 0,
+              }}
+            >
+              <Image
+                src={person.profile_url}
+                alt={person.name}
+                onLoad={() => handleImageLoad(person._id)}
+              />
+              <Box className="card-info">
+                <Text>{person.name}</Text>
+              </Box>
+            </div>
+          </Link>
         </Skeleton>
-      </Link>
     );
   };
 
