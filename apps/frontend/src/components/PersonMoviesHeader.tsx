@@ -1,11 +1,13 @@
-import { Box, Button, Heading, Image, SkeletonCircle, SkeletonText } from "@chakra-ui/react";
+import { Box, Button, Flex, Heading, Image, SkeletonCircle, SkeletonText } from "@chakra-ui/react";
 import type { Person } from "@video-club/types";
+import { useNavigate } from "react-router";
 
 export default function PersonMoviesHeader({
     person
 }: {
     person?: Person
 }) {
+    const navigate = useNavigate();
     return (
         <>
             {person ? (
@@ -42,11 +44,18 @@ export default function PersonMoviesHeader({
                 </Button>
                 </Box>
             ) : (
-                <div style={{ margin: "1em 0", display: "flex", alignItems: "center" }}>
+                <Flex style={{ margin: "1em 0" }}>
                     <SkeletonCircle size="80px" />
                     <SkeletonText ml="2" noOfLines={1} width="300px" />
-                </div>
+                </Flex>
             )}
+            <Button
+                mb={3}
+                variant="plain"
+                onClick={() => navigate(-1)}
+            >
+                ‹ Back
+            </Button>
         </>
     )
 }
