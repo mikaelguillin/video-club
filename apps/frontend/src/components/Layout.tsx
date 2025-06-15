@@ -6,7 +6,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     return (
         <>
             <header className="header">
-                <Heading size="5xl" className="logo">
+                <Heading size="3xl" className="logo">
                     <Link to="/">Video Club</Link>
                 </Heading>
             </header>
