@@ -95,7 +95,10 @@ app.get('/person/:personId/movies', async (req: Request, res: Response) => {
 
         const paginatedMovieIds = movieIds.slice(skip, skip + limit);
 
-        const movies = await db.collection('movies').find({ "_id": { "$in": paginatedMovieIds } }).toArray();
+        const movies = await db.collection('movies').find(
+            { "_id": { "$in": paginatedMovieIds },
+            show: { "$ne": false }
+        }).toArray();
 
         res.send({
             items: movies,
