@@ -133,6 +133,25 @@ app.get('/movies', async (req: Request, res: Response) => {
     }
 });
 
+app.get('/movie/:movieId', async (req: Request, res: Response) => {
+    try {
+        const { mongoClient } = await connectToDB();
+
+        if (!mongoClient)
+            throw new Error('An error occured while connecting to database');
+
+        const db = mongoClient.db('video-club');
+        const movie = await db
+            .collection('movies')
+            .findOne({"_id": ObjectId.createFromHexString(req.params.movieId)});
+
+        res.send(movie);
+    } catch (error) {
+        console.error('Error', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 app.get('/randommovie', async (req: Request, res: Response) => {
     try {
         const { mongoClient } = await connectToDB();

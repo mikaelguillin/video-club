@@ -82,6 +82,20 @@ img { max-width: 100%; }
   text-overflow: ellipsis;
 }
 
+.movie-detail-card {
+  background-color:#000;
+  background-size: cover;
+  background-position: 50%;
+  color: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.movie-detail-card-inner {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+}
+
 .footer {
   margin: 2em 0 1em;
   text-align: center;

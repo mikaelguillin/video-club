@@ -8,6 +8,7 @@ import './index.css';
 
 const PersonsList = lazy(() => import('./components/PersonsList.tsx'))
 const PersonMovies = lazy(() => import('./components/PersonMovies.tsx'))
+const MovieDetail = lazy(() => import('./components/MovieDetail.tsx'))
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -17,6 +18,7 @@ createRoot(document.getElementById('root')!).render(
           <Routes>
             <Route path="/" element={<PersonsList />} />
             <Route path="/person/:personId/movies" element={<PersonMovies />} />
+            <Route path="/movie/:movieId" element={<MovieDetail />} />
             <Route path="*" element={
               <div>
                 <h1>404 - Page Not Found</h1>

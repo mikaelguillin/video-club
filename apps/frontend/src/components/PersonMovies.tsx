@@ -1,6 +1,6 @@
 import { Box, Image, Skeleton, Text } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router";
+import { Link, useParams } from "react-router";
 import type { Movie, Person } from "@video-club/types";
 import PersonMoviesHeader from "./PersonMoviesHeader";
 import GridList from "./GridList";
@@ -39,28 +39,30 @@ export default function PersonMovies() {
         height={!isImageLoaded ? "350px" : "auto"}
         loading={!isImageLoaded}
       >
-        <div
-          className="movie-card"
-          style={{
-            opacity: isImageLoaded ? 1 : 0,
-            transform: `translateY(${isImageLoaded ? "0" : "10px"})`,
-            transition: "opacity 0.3s ease-in-out, transform 0.3s ease-in-out",
-            position: "relative",
-            zIndex: isImageLoaded ? 1 : 0,
-          }}
-        >
-          <Image
-            src={movie.poster_url}
-            alt={movieTitle}
-            onLoad={() => handleImageLoad(movie._id)}
-          />
-          <Box className="card-info" hideBelow="sm">
-            <Text className="movie-title" title={movieTitle}>
-              {movieTitle}
-            </Text>
-            <Text color="#555">({movie.year})</Text>
-          </Box>
-        </div>
+        <Link to={`/movie/${movie._id}`}>
+          <div
+            className="movie-card"
+            style={{
+              opacity: isImageLoaded ? 1 : 0,
+              transform: `translateY(${isImageLoaded ? "0" : "10px"})`,
+              transition: "opacity 0.3s ease-in-out, transform 0.3s ease-in-out",
+              position: "relative",
+              zIndex: isImageLoaded ? 1 : 0,
+            }}
+          >
+            <Image
+              src={movie.poster_url}
+              alt={movieTitle}
+              onLoad={() => handleImageLoad(movie._id)}
+            />
+            <Box className="card-info" hideBelow="sm">
+              <Text className="movie-title" title={movieTitle}>
+                {movieTitle}
+              </Text>
+              <Text color="#555">({movie.year})</Text>
+            </Box>
+          </div>
+        </Link>
       </Skeleton>
     );
   };

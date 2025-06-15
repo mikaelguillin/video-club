@@ -15,4 +15,5 @@ export interface Movie {
     poster_url: string;
     background_url: string;
     title: Record<string, string>;
+    overview: Record<string, string>;
 }
