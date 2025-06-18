@@ -91,15 +91,18 @@ app.get('/person/:personId/movies', async (req: Request, res: Response) => {
         const personMovies = await db.collection('persons-movies').find({ "person_id": req.params.personId }).toArray();
         const movieIds = personMovies.map(personMovie => ObjectId.createFromHexString(personMovie.movie_id));
 
-        const total = movieIds.length;
-
-        const paginatedMovieIds = movieIds.slice(skip, skip + limit);
-
-        const movies = await db.collection('movies').find(
-            { "_id": { "$in": paginatedMovieIds },
+        const allMovies = await db.collection('movies').find(
+            {
+                "_id": { "$in": movieIds },
             show: { "$ne": false }
+            }).sort({
+                "title.en": 1,
+                "title.original": 1
         }).toArray();
 
+        const total = allMovies.length;
+
+        const movies = allMovies.slice(skip, skip + limit);
         res.send({
             items: movies,
             pagination: {
