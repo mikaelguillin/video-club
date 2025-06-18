@@ -44,9 +44,9 @@ export default function PersonMoviesHeader({
                 </Button>
                 </Box>
             ) : (
-                <Flex style={{ margin: "1em 0" }}>
+                <Flex mt="3" mb="3" alignItems="center">
                     <SkeletonCircle size="80px" />
-                    <SkeletonText ml="2" noOfLines={1} width="300px" />
+                    <SkeletonText ml="3" noOfLines={1} width="300px" />
                 </Flex>
             )}
             <Button
