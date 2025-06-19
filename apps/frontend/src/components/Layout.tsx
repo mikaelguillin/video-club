@@ -1,6 +1,7 @@
 import { Heading, Icon } from "@chakra-ui/react";
 import { Link } from "react-router";
 import { BsGithub } from "react-icons/bs"
+import { Analytics } from '@vercel/analytics/react';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
     return (
@@ -24,6 +25,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 </a>
                 <p>This is not an official website of Konbini.</p>
             </footer>
+            <Analytics />
         </>
     )
 }
