@@ -4,8 +4,9 @@ import type { Movie, Person } from "@video-club/types";
 import PersonMoviesHeader from "./PersonMoviesHeader";
 import GridList from "./GridList";
 import { TMDB_IMAGE_BASE } from "@/constants";
-import Link from "next/link";
+import { Link } from '@/i18n/navigation';
 import Image from "next/image";
+import { useLocale } from "next-intl";
 
 interface PersonMoviesProps {
   personId: string;
@@ -27,19 +28,19 @@ export default function PersonMovies({
   initialPage,
   initialPagination,
 }: PersonMoviesProps) {
+  const locale = useLocale();
   const renderMovie = (
     movie: Movie,
     isImageLoaded: boolean,
     handleImageLoad: (id: string) => void
   ) => {
-    const movieTitle = movie.title?.en || movie.title?.original;
-
+    const { title, poster_url } = movie.translations?.[locale] || {};
     return (
       <Link href={`/movie/${movie._id}`} key={movie._id}>
         <article className="movie-card">
           <Image
-            src={`${TMDB_IMAGE_BASE}${movie.poster_url}`}
-            alt={movieTitle}
+            src={`${TMDB_IMAGE_BASE}${poster_url}`}
+            alt={title || ''}
             onLoad={() => handleImageLoad(movie._id)}
             width={500}
             height={750}
@@ -53,8 +54,8 @@ export default function PersonMovies({
             }}
           />
           <Box className="card-info" hideBelow="sm">
-            <Text className="movie-title" title={movieTitle}>
-              {movieTitle}
+            <Text className="movie-title" title={title}>
+              {title}
             </Text>
             <Text color="#555">({movie.year})</Text>
           </Box>

@@ -20,8 +20,6 @@ export async function GET(req: NextRequest) {
             .limit(limit)
             .toArray();
 
-        console.log({total})
-
         return NextResponse.json({
             items: persons,
             pagination: {

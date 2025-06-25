@@ -7,14 +7,15 @@ export interface Person {
     show?: boolean;
 }
 
+interface MovieTranslation {
+    title: string;
+    overview: string;
+    poster_url: string;
+}
 export interface Movie {
     _id: string;
-    name: string;
     director: string;
     year: number;
-    poster_url: string;
     backdrop_url: string;
-    background_url: string;
-    title: Record<string, string>;
-    overview: Record<string, string>;
+    translations: Record<string, MovieTranslation>;
 } 

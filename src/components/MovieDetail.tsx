@@ -1,59 +1,78 @@
 "use client";
 import { TMDB_IMAGE_BASE } from "@/constants";
-import { Box, Button, Heading, Skeleton, Text, SkeletonText } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Heading,
+  Skeleton,
+  Text,
+  SkeletonText,
+} from "@chakra-ui/react";
 import type { Movie } from "@video-club/types";
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import Image from 'next/image'
+import { useParams } from "next/navigation";
+import Image from "next/image";
+import { useLocale, useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
 
-export default function MovieDetail() {
+interface MovieDetailProps {
+  initialMovie?: Movie;
+}
+
+export default function MovieDetail({ initialMovie }: MovieDetailProps) {
+  const t = useTranslations();
+  const locale = useLocale();
   const params = useParams();
   const movieId = params?.movieId as string;
-  const [movie, setMovie] = useState<Movie>({} as Movie);
+  const [movie, setMovie] = useState<Movie>(initialMovie || ({} as Movie));
   const router = useRouter();
 
   useEffect(() => {
     const fetchMovie = async () => {
       try {
-        const response = await fetch(`/api/movie/${movieId}`);
+        const response = await fetch(`/api/movie/${movieId}?locale=${locale}`);
         const movieData = await response.json();
         setMovie(movieData);
       } catch (error) {
         console.error("Error fetching movie:", error);
       }
     };
-    if (movieId) fetchMovie();
-  }, [movieId]);
+    if (movieId && !initialMovie) fetchMovie();
+  }, [movieId, initialMovie, locale]);
+
+  const { title, overview, poster_url } = movie.translations?.[locale] || {};
 
   return (
     <>
       <Button onClick={() => router.back()} mb={3} variant="plain">
-        ‹ Back
+        ‹ {t("Actions.back")}
       </Button>
       <Box
         className="movie-detail-card"
         as="article"
         style={
-          movie.backdrop_url || movie.poster_url ? {
-            backgroundImage: `url(${TMDB_IMAGE_BASE}${
-              movie.backdrop_url || movie.poster_url
-            })`,
-          } : undefined
+          movie.backdrop_url || poster_url
+            ? {
+                backgroundImage: `url(${TMDB_IMAGE_BASE}${
+                  movie.backdrop_url || poster_url
+                })`,
+              }
+            : undefined
         }
       >
         <Box className="movie-detail-card-inner" display={{ mdTo2xl: "flex" }}>
           <Box
             width={{
-              base: '50%',
-              md: 'calc(500px + (var(--chakra-spacing-5) * 2))'
+              base: "50%",
+              md: "calc(500px + (var(--chakra-spacing-5) * 2))",
             }}
             maxWidth="50%"
             p={5}
           >
-            {movie.poster_url ? (
+            {poster_url ? (
               <Image
-                src={`${TMDB_IMAGE_BASE}${movie.poster_url}`}
-                alt={`Poster of ${movie.name}`}
+                src={`${TMDB_IMAGE_BASE}${poster_url}`}
+                alt={`Poster of ${title}`}
                 height={750}
                 width={500}
                 priority
@@ -80,11 +99,11 @@ export default function MovieDetail() {
             {movie._id ? (
               <>
                 <Heading size="4xl" mb={4}>
-                  {movie.title.en}{" "}
+                  {title}{" "}
                   <span style={{ fontSize: ".7em" }}>({movie.year})</span>
                 </Heading>
-                <Heading size="2xl">Overview</Heading>
-                <Text>{movie.overview.en}</Text>
+                <Heading size="2xl">{t("MovieDetail.overview")}</Heading>
+                <Text>{overview}</Text>
               </>
             ) : (
               <SkeletonText noOfLines={10} />

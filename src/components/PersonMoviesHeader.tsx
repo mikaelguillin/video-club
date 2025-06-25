@@ -10,9 +10,11 @@ import {
   SkeletonText,
 } from "@chakra-ui/react";
 import type { Person } from "@video-club/types";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
 
 export default function PersonMoviesHeader({ person }: { person?: Person }) {
+  const t = useTranslations();
   const router = useRouter();
   return (
     <>
@@ -35,9 +37,10 @@ export default function PersonMoviesHeader({ person }: { person?: Person }) {
               margin={"0 .75em 0 0"}
             />
             <Heading size="3xl">
-              {person.name}&apos;
+              {/* {person.name}&apos;
               {person.name.charAt(person.name.length - 1) === "s" ? "" : "s"}{" "}
-              selection
+              selection */}
+              {t('MoviesList.personSelection', { name: person.name })}
             </Heading>
           </div>
           <Button
@@ -47,7 +50,7 @@ export default function PersonMoviesHeader({ person }: { person?: Person }) {
             asChild
           >
             <a href={`https://www.youtube.com/watch?v=${person.video}`} target="_blank">
-              🎬 Watch the interview
+              🎬 {t('MoviesList.watchInterview')}
             </a>
           </Button>
         </Box>
@@ -58,7 +61,7 @@ export default function PersonMoviesHeader({ person }: { person?: Person }) {
         </Flex>
       )}
       <Button mb={3} variant="plain" onClick={() => router.back()}>
-        ‹ Back
+        ‹ {t('Actions.back')}
       </Button>
     </>
   );

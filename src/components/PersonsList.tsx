@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import { Link } from '@/i18n/navigation';
 import type { Person } from "@video-club/types";
 import GridList from "./GridList";
 import { Box, Text } from "@chakra-ui/react";

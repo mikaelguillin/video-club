@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { SimpleGrid, Skeleton } from "@chakra-ui/react";
 import { useSearchParams } from "next/navigation";
+import { useLocale } from "next-intl";
 
 interface PaginationResponse<T> {
   items: T[];
@@ -57,6 +58,7 @@ export default function GridList<T extends { _id: string }>({
   // const router = useRouter();
   // const pathname = usePathname();
   const searchParams = useSearchParams();
+  const locale = useLocale();
 
   const fetchItems = useCallback(
     async (pageNumber: number) => {
@@ -64,7 +66,7 @@ export default function GridList<T extends { _id: string }>({
       setIsLoading(true);
       try {
         const response = await fetch(
-          `${fetchUrl}?page=${pageNumber}&limit=${initialLimit}`
+          `${fetchUrl}?page=${pageNumber}&limit=${initialLimit}&locale=${locale}`
         );
         const { items: itemsData, pagination } = (await response.json()) as PaginationResponse<T>;
 
@@ -80,7 +82,7 @@ export default function GridList<T extends { _id: string }>({
         setIsLoading(false);
       }
     },
-    [fetchUrl, initialLimit, isLoading]
+    [fetchUrl, initialLimit, isLoading, locale]
   );
 
   useEffect(() => {

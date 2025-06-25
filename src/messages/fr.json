@@ -1,0 +1,19 @@
+{
+  "Actions": {
+    "back": "Retour"
+  },
+  "Home": {
+    "welcome": "Bienvenue au Vidéo Club !"
+  },
+  "MoviesList": {
+    "personSelection": "La sélection de {name}",
+    "watchInterview": "Regarder l'interview"
+  },
+  "MovieDetail": {
+    "overview": "Synopsis"
+  },
+  "Footer": {
+    "seeCodeOnGithub": "Voir le code sur GitHub",
+    "notAnOfficialKonbiniWebsite": "Ceci n'est pas un site officiel de Konbini."
+  }
+}

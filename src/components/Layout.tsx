@@ -1,9 +1,13 @@
+"use client"
+
 import Link from "next/link";
 import { Heading } from "@chakra-ui/react";
 import { BsGithub } from "react-icons/bs";
 import { Analytics } from "@vercel/analytics/react";
+import { useTranslations } from "next-intl";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
+  const t = useTranslations();
   return (
     <>
       <header className="header">
@@ -16,10 +20,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       <footer className="footer">
         <a href="https://github.com/mikaelguillin/video-club" style={{display: 'inline-flex', alignItems: 'center'}}>
-          See the code on GitHub
+          {t('Footer.seeCodeOnGithub')}
           <BsGithub size={20} style={{marginLeft: '5px'}} />
         </a>
-        <p>This is not an official website of Konbini.</p>
+        <p>{t('Footer.notAnOfficialKonbiniWebsite')}</p>
       </footer>
       <Analytics />
     </>
