@@ -16,7 +16,7 @@ export async function GET(
         const skip = (page - 1) * limit;
 
         const { personId } = await params;
-        const locale = searchParams.get('locale');
+        const locale = searchParams.get('locale') || 'en';
         const personMovies = await db.collection('persons-movies').find({ person_id: personId }).toArray();
         const movieIds = personMovies.map((personMovie) => ObjectId.createFromHexString(personMovie.movie_id));
         const allMovies = await db.collection('movies')
