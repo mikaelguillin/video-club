@@ -1,6 +1,7 @@
 import { Provider } from "@/components/ui/provider";
 import "../globals.css";
 import AuthGuard from "@/components/admin/AuthGuard";
+import { Toaster } from "@/components/ui/toaster";
 
 export default function AdminLayout({
   children,
@@ -11,7 +12,12 @@ export default function AdminLayout({
     <html lang="en">
       <body>
         <Provider>
-          <AuthGuard>{children}</AuthGuard>
+          <AuthGuard>
+            <>
+                {children}
+                <Toaster />
+            </>
+        </AuthGuard>
         </Provider>
       </body>
     </html>

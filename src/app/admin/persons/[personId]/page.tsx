@@ -19,6 +19,7 @@ import {
   useListCollection,
 } from "@chakra-ui/react";
 import { useAsync, useDebounce } from "react-use";
+import { toaster } from "@/components/ui/toaster";
 
 interface Person {
   _id: string;
@@ -56,10 +57,6 @@ export default function AdminPersonDetails() {
     video: "",
     profile_url: "",
   });
-  const [message, setMessage] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
   const { open, onOpen, onClose } = useDisclosure();
   const [inputValue, setInputValue] = useState("");
   const [debouncedInputValue, setDebouncedInputValue] = useState("");
@@ -114,9 +111,17 @@ export default function AdminPersonDetails() {
       body: JSON.stringify({ ...form }),
     });
     if (res.ok) {
-      setMessage({ type: "success", text: "Person updated" });
+      toaster.create({
+        type: 'success',
+        title: 'Success',
+        description: 'Person updated'
+      })
     } else {
-      setMessage({ type: "error", text: "Failed to update person" });
+      toaster.create({
+        type: 'error',
+        title: 'Error',
+        description: 'Failed to update person'
+      })
     }
   };
 
@@ -192,14 +197,6 @@ export default function AdminPersonDetails() {
         <Button colorScheme="green" onClick={handleSave}>
           Save
         </Button>
-        {message && (
-          <Text
-            color={message.type === "success" ? "green.500" : "red.500"}
-            mt={2}
-          >
-            {message.text}
-          </Text>
-        )}
       </Stack>
       <Heading size="md" mb={4}>
         Movies

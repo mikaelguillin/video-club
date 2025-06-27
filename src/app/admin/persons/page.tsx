@@ -14,6 +14,7 @@ import {
 } from "@chakra-ui/react";
 import { Text } from "@chakra-ui/react";
 import { useAsync, useDebounce } from "react-use";
+import { toaster } from "@/components/ui/toaster";
 
 interface Person {
   _id: string;
@@ -38,10 +39,6 @@ export default function AdminPersons() {
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const [message, setMessage] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
   const router = useRouter();
   const { open, onOpen, onClose } = useDisclosure();
   const [inputValue, setInputValue] = useState("");
@@ -83,7 +80,11 @@ export default function AdminPersons() {
       !addForm.profile_url ||
       !addForm.date
     ) {
-      setMessage({ type: "error", text: "All fields are required" });
+        toaster.create({
+            title: 'Error',
+            type: 'error',
+            description: 'All fields are required'
+        });
       return;
     }
     const res = await fetch("/admin/api/persons", {
@@ -106,9 +107,17 @@ export default function AdminPersons() {
         .then((res) => res.json())
         .then((data) => setPersons(data.items))
         .finally(() => setLoading(false));
-      setMessage({ type: "success", text: "Person added" });
+      toaster.create({
+        title: 'Success',
+        type: 'success',
+        description: 'Person added'
+    });
     } else {
-      setMessage({ type: "error", text: "Failed to add person" });
+      toaster.create({
+        title: 'Error',
+        type: 'error',
+        description: 'Failed to add person'
+    });
     }
   };
 
@@ -118,9 +127,17 @@ export default function AdminPersons() {
     const res = await fetch(`/admin/api/person/${deleteId}`, { method: "DELETE" });
     if (res.ok) {
       setPersons((prev) => prev.filter((p) => p._id !== deleteId));
-      setMessage({ type: "success", text: "Person deleted" });
+      toaster.create({
+        title: 'Success',
+        type: 'success',
+        description: 'Person deleted'
+    });
     } else {
-      setMessage({ type: "error", text: "Failed to delete person" });
+      toaster.create({
+        title: 'Error',
+        type: 'error',
+        description: 'Failed to delete person'
+    });
     }
     setDeleteId(null);
     setDeleteLoading(false);
@@ -132,14 +149,6 @@ export default function AdminPersons() {
       <Button colorScheme="blue" mb={4} onClick={onOpen}>
         Add Person (from TMDB)
       </Button>
-      {message && (
-        <Text
-          color={message.type === "success" ? "green.500" : "red.500"}
-          mb={4}
-        >
-          {message.text}
-        </Text>
-      )}
       <Table.Root variant="outline">
         <Table.Header>
           <Table.Row>
