@@ -11,7 +11,14 @@ import {
   Spinner,
   IconButton,
   Text,
+  useDisclosure,
+  Dialog,
+  Portal,
+  CloseButton,
+  Combobox,
+  useListCollection,
 } from "@chakra-ui/react";
+import { useAsync, useDebounce } from "react-use";
 
 interface Person {
   _id: string;
@@ -35,6 +42,8 @@ interface Movie {
   year: number;
 }
 
+type TmdbMovie = { id: number; title: string; release_date?: string };
+
 export default function AdminPersonDetails() {
   const { personId } = useParams<{ personId: string }>();
   const [person, setPerson] = useState<Person | null>(null);
@@ -51,13 +60,26 @@ export default function AdminPersonDetails() {
     type: "success" | "error";
     text: string;
   } | null>(null);
+  const { open, onOpen, onClose } = useDisclosure();
+  const [inputValue, setInputValue] = useState("");
+  const [debouncedInputValue, setDebouncedInputValue] = useState("");
+  useDebounce(() => setDebouncedInputValue(inputValue), 300, [inputValue]);
+
+  const { collection, set } = useListCollection<TmdbMovie>({
+    initialItems: [],
+    itemToString: (item) =>
+      `${item.title} (${item.release_date?.slice(0, 4) || ""})`,
+    itemToValue: (item) => `${item.id}`,
+  });
+
+  const [selectedMovie, setSelectedMovie] = useState<TmdbMovie>();
 
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
       const [personRes, moviesRes] = await Promise.all([
-        fetch(`/api/person/${personId}`),
-        fetch(`/api/person/${personId}/movies`),
+        fetch(`/admin/api/person/${personId}`),
+        fetch(`/admin/api/person/${personId}/movies`),
       ]);
       const personData = await personRes.json();
       const moviesData = await moviesRes.json();
@@ -86,7 +108,7 @@ export default function AdminPersonDetails() {
   };
 
   const handleSave = async () => {
-    const res = await fetch(`/api/person/${personId}`, {
+    const res = await fetch(`/admin/api/person/${personId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...form }),
@@ -97,6 +119,22 @@ export default function AdminPersonDetails() {
       setMessage({ type: "error", text: "Failed to update person" });
     }
   };
+
+  const tmdbSearchState = useAsync(async () => {
+    if (!debouncedInputValue) {
+      set([]);
+      return;
+    }
+    const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+    const res = await fetch(
+      `https://api.themoviedb.org/3/search/movie?&query=${encodeURIComponent(
+        debouncedInputValue
+      )}`,
+      { headers: { Authorization: `Bearer ${apiKey}` } }
+    );
+    const data = await res.json();
+    set(data.results);
+  }, [debouncedInputValue, set]);
 
   if (loading) {
     return (
@@ -166,7 +204,7 @@ export default function AdminPersonDetails() {
       <Heading size="md" mb={4}>
         Movies
       </Heading>
-      <Button colorScheme="blue" mb={4}>
+      <Button colorScheme="blue" mb={4} onClick={onOpen}>
         Add Movie (from TMDB)
       </Button>
       <Table.Root variant="outline">
@@ -201,6 +239,69 @@ export default function AdminPersonDetails() {
           )}
         </Table.Body>
       </Table.Root>
+      <Dialog.Root
+        size="cover"
+        placement="center"
+        motionPreset="slide-in-bottom"
+        open={open}
+      >
+        <Portal>
+          <Dialog.Backdrop />
+          <Dialog.Positioner>
+            <Dialog.Content>
+              <Dialog.Header>
+                <Dialog.Title>Search Movie from TMDB</Dialog.Title>
+                <Dialog.CloseTrigger asChild>
+                  <CloseButton size="sm" onClick={onClose} />
+                </Dialog.CloseTrigger>
+              </Dialog.Header>
+              <Dialog.Body>
+                <Stack gap={4}>
+                  <p>Selected movie: {selectedMovie?.title}</p>
+                  <Combobox.Root
+                    collection={collection}
+                    onInputValueChange={(e) => setInputValue(e.inputValue)}
+                    onValueChange={(selected) => {
+                      setSelectedMovie(selected.items[0]);
+                    }}
+                  >
+                    <Combobox.Control>
+                      <Combobox.Input placeholder="Search for a movie title..." />
+                      <Combobox.IndicatorGroup>
+                        <Combobox.ClearTrigger />
+                        <Combobox.Trigger />
+                      </Combobox.IndicatorGroup>
+                    </Combobox.Control>
+                    <Combobox.Positioner>
+                      <Combobox.Content>
+                        {tmdbSearchState.loading ? (
+                          <Box p={2} textAlign="center">
+                            <Spinner size="sm" />
+                          </Box>
+                        ) : tmdbSearchState.error ? (
+                          <Box p={2} textAlign="center">
+                            Error fetching movies
+                          </Box>
+                        ) : (
+                          collection.items.map((item) => (
+                            <Combobox.Item item={item} key={item.id}>
+                              {item.title}{" "}
+                              {item.release_date
+                                ? `(${item.release_date.slice(0, 4)})`
+                                : ""}
+                              <Combobox.ItemIndicator />
+                            </Combobox.Item>
+                          ))
+                        )}
+                      </Combobox.Content>
+                    </Combobox.Positioner>
+                  </Combobox.Root>
+                </Stack>
+              </Dialog.Body>
+            </Dialog.Content>
+          </Dialog.Positioner>
+        </Portal>
+      </Dialog.Root>
     </Box>
   );
 }

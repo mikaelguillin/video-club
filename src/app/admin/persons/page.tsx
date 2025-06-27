@@ -1,34 +1,145 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Box, Heading, Button, Spinner, IconButton } from "@chakra-ui/react";
+import { Box, Heading, Button, Spinner, IconButton, Span, Image, useDisclosure } from "@chakra-ui/react";
 import { Table } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
+import {
+  Dialog,
+  Portal,
+  CloseButton,
+  Stack,
+  Combobox,
+  Input,
+  useListCollection,
+} from "@chakra-ui/react";
+import { Text } from "@chakra-ui/react";
+import { useAsync, useDebounce } from "react-use";
 
 interface Person {
   _id: string;
+  tmdbId: number;
   name: string;
-  date: string | number | Date;
+  profileImage: string;
+  date: string;
   show: boolean;
 }
+
+type TMDBPerson = { id: number; name: string; profile_path?: string };
 
 export default function AdminPersons() {
   const [persons, setPersons] = useState<Person[]>([]);
   const [loading, setLoading] = useState(true);
+  const [addForm, setAddForm] = useState({
+    name: "",
+    profile_url: "",
+    date: "",
+    show: true
+  });
+
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
   const router = useRouter();
+  const { open, onOpen, onClose } = useDisclosure();
+  const [inputValue, setInputValue] = useState("");
+  const [debouncedInputValue, setDebouncedInputValue] = useState("");
+  useDebounce(() => setDebouncedInputValue(inputValue), 300, [inputValue]);
+
+  const { collection, set } = useListCollection<TMDBPerson>({
+    initialItems: [],
+    itemToString: (item) => item.name,
+    itemToValue: (item) => `${item.id}`,
+  });
 
   useEffect(() => {
-    fetch("/api/persons")
+    fetch("/admin/api/persons")
       .then((res) => res.json())
       .then((data) => setPersons(data.items))
       .finally(() => setLoading(false));
   }, []);
 
+  const tmdbSearchState = useAsync(async () => {
+    if (!debouncedInputValue) {
+      set([]);
+      return;
+    }
+    const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+    const res = await fetch(
+      `https://api.themoviedb.org/3/search/person?&query=${encodeURIComponent(
+        debouncedInputValue
+      )}`,
+      { headers: { Authorization: `Bearer ${apiKey}` } }
+    );
+    const data = await res.json();
+    set(data.results);
+  }, [debouncedInputValue, set]);
+
+  const handleAddPerson = async () => {
+    if (
+      !addForm.name ||
+      !addForm.profile_url ||
+      !addForm.date
+    ) {
+      setMessage({ type: "error", text: "All fields are required" });
+      return;
+    }
+    const res = await fetch("/admin/api/persons", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: addForm.name,
+        profile_url: addForm.profile_url,
+        date: addForm.date,
+        show: addForm.show
+      }),
+    });
+    if (res.ok) {
+      onClose();
+      setAddForm({ name: "", profile_url: "", date: "", show: true });
+      setInputValue("");
+      set([]);
+      setLoading(true);
+      fetch("/admin/api/persons")
+        .then((res) => res.json())
+        .then((data) => setPersons(data.items))
+        .finally(() => setLoading(false));
+      setMessage({ type: "success", text: "Person added" });
+    } else {
+      setMessage({ type: "error", text: "Failed to add person" });
+    }
+  };
+
+  const handleDeletePerson = async () => {
+    if (!deleteId) return;
+    setDeleteLoading(true);
+    const res = await fetch(`/admin/api/person/${deleteId}`, { method: "DELETE" });
+    if (res.ok) {
+      setPersons((prev) => prev.filter((p) => p._id !== deleteId));
+      setMessage({ type: "success", text: "Person deleted" });
+    } else {
+      setMessage({ type: "error", text: "Failed to delete person" });
+    }
+    setDeleteId(null);
+    setDeleteLoading(false);
+  };
+
   return (
     <Box p={8}>
       <Heading mb={6}>Persons</Heading>
-      <Button colorScheme="blue" mb={4}>
+      <Button colorScheme="blue" mb={4} onClick={onOpen}>
         Add Person (from TMDB)
       </Button>
+      {message && (
+        <Text
+          color={message.type === "success" ? "green.500" : "red.500"}
+          mb={4}
+        >
+          {message.text}
+        </Text>
+      )}
       <Table.Root variant="outline">
         <Table.Header>
           <Table.Row>
@@ -64,7 +175,12 @@ export default function AdminPersons() {
                 </Table.Cell>
                 <Table.Cell>{person.show ? "Yes" : "No"}</Table.Cell>
                 <Table.Cell>
-                  <IconButton aria-label="Edit" size="sm" mr={2}>
+                  <IconButton
+                    aria-label="Edit"
+                    size="sm"
+                    mr={2}
+                    onClick={() => router.push(`/admin/persons/${person._id}`)}
+                  >
                     ✏️
                   </IconButton>
                   <IconButton
@@ -72,15 +188,9 @@ export default function AdminPersons() {
                     size="sm"
                     colorScheme="red"
                     mr={2}
+                    onClick={() => setDeleteId(person._id)}
                   >
                     🗑️
-                  </IconButton>
-                  <IconButton
-                    aria-label="Details"
-                    size="sm"
-                    onClick={() => router.push(`/admin/persons/${person._id}`)}
-                  >
-                    👁️
                   </IconButton>
                 </Table.Cell>
               </Table.Row>
@@ -88,6 +198,136 @@ export default function AdminPersons() {
           )}
         </Table.Body>
       </Table.Root>
+
+      <Dialog.Root open={open}>
+        <Portal>
+          <Dialog.Backdrop />
+          <Dialog.Positioner>
+            <Dialog.Content>
+              <Dialog.Header>
+                <Dialog.Title>Add Person from TMDB</Dialog.Title>
+                <Dialog.CloseTrigger asChild>
+                  <CloseButton
+                    size="sm"
+                    onClick={onClose}
+                  />
+                </Dialog.CloseTrigger>
+              </Dialog.Header>
+              <Dialog.Body>
+                <Stack gap={4}>
+                  <Combobox.Root
+                    collection={collection}
+                    onInputValueChange={({ inputValue }) =>
+                        setInputValue(inputValue)
+                    }
+                    onValueChange={({ items }) => {
+                      const item = items[0];
+                      if (item) {
+                        setAddForm({
+                          ...addForm,
+                          name: item.name,
+                          profile_url: item.profile_path
+                            ? `https://image.tmdb.org/t/p/w500${item.profile_path}`
+                            : "",
+                        });
+                      }
+                    }}
+                  >
+                    <Combobox.Control>
+                      <Combobox.Input placeholder="Select a person..." />
+                      <Combobox.IndicatorGroup>
+                        <Combobox.ClearTrigger />
+                        <Combobox.Trigger />
+                      </Combobox.IndicatorGroup>
+                    </Combobox.Control>
+                    <Combobox.Positioner>
+                      <Combobox.Content>
+                        {tmdbSearchState.loading ? (
+                          <Box p={2} textAlign="center">
+                            <Spinner size="sm" />
+                          </Box>
+                        ) : tmdbSearchState.error ? (
+                          <Box p={2} textAlign="center">
+                            Error fetching movies
+                          </Box>
+                        ) : collection.items.map((item) => (
+                          <Combobox.Item item={item} key={item.id}>
+                            <Image
+                                src={item.profile_path ? `https://image.tmdb.org/t/p/w45${item.profile_path}` : '/placeholder.png'}
+                                alt=""
+                                height={67}
+                                width={45}
+                            />
+                            <Span>{item.name}</Span>
+                            <Combobox.ItemIndicator />
+                          </Combobox.Item>
+                        ))}
+                      </Combobox.Content>
+                    </Combobox.Positioner>
+                  </Combobox.Root>
+                  <Input
+                    type="date"
+                    placeholder="Interview Date"
+                    value={addForm.date}
+                    onChange={(e) =>
+                      setAddForm((f) => ({ ...f, date: e.target.value }))
+                    }
+                    required
+                  />
+                </Stack>
+              </Dialog.Body>
+              <Dialog.Footer>
+                <Button colorScheme="blue" mr={3} onClick={handleAddPerson}>
+                  Add
+                </Button>
+                <Button onClick={() => {
+                    onClose();
+                    setAddForm({ name: "", profile_url: "", date: "", show: true })
+                }}>
+                    Cancel
+                </Button>
+              </Dialog.Footer>
+            </Dialog.Content>
+          </Dialog.Positioner>
+        </Portal>
+      </Dialog.Root>
+
+      <Dialog.Root
+        open={!!deleteId}
+        onOpenChange={(open) => {
+          if (!open) setDeleteId(null);
+        }}
+      >
+        <Portal>
+          <Dialog.Backdrop />
+          <Dialog.Positioner>
+            <Dialog.Content>
+              <Dialog.Header>
+                <Dialog.Title>Delete Person</Dialog.Title>
+                <Dialog.CloseTrigger asChild>
+                  <CloseButton size="sm" onClick={() => setDeleteId(null)} />
+                </Dialog.CloseTrigger>
+              </Dialog.Header>
+              <Dialog.Body>
+                <Text mb={4}>
+                  Are you sure you want to delete this person? This action
+                  cannot be undone.
+                </Text>
+                <Stack direction="row" justify="flex-end" gap={2}>
+                  <Button onClick={() => setDeleteId(null)}>Cancel</Button>
+                  <Button
+                    colorScheme="red"
+                    onClick={handleDeletePerson}
+                    loading={deleteLoading}
+                  >
+                    Delete
+                  </Button>
+                </Stack>
+              </Dialog.Body>
+            </Dialog.Content>
+          </Dialog.Positioner>
+        </Portal>
+      </Dialog.Root>
     </Box>
   );
 }

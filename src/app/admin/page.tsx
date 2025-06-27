@@ -35,9 +35,6 @@ export default function AdminDashboard() {
         <ChakraLink as={Link} href="/admin/persons">
           Persons
         </ChakraLink>
-        <ChakraLink as={Link} href="/admin/associations">
-          Associations
-        </ChakraLink>
       </Stack>
     </Box>
   );

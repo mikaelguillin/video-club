@@ -19,4 +19,4 @@ export async function GET(
         console.error('Error', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-} 
+}
