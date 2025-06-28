@@ -11,10 +11,23 @@ export async function GET(req: NextRequest) {
         const page = parseInt(searchParams.get('page') || '1');
         const limit = parseInt(searchParams.get('limit') || '20');
         const skip = (page - 1) * limit;
+        const search = searchParams.get('search') || '';
 
-        const total = await db.collection('movies').countDocuments();
+        // Build search query
+        let query = {};
+        if (search.trim()) {
+            query = {
+                $or: [
+                    { 'translations.en.title': { $regex: search, $options: 'i' } },
+                    { 'translations.fr.title': { $regex: search, $options: 'i' } },
+                    { director: { $regex: search, $options: 'i' } },
+                ]
+            };
+        }
+
+        const total = await db.collection('movies').countDocuments(query);
         const movies = await db.collection('movies')
-            .find({})
+            .find(query)
             .sort({ year: -1 })
             .skip(skip)
             .limit(limit)

@@ -7,6 +7,7 @@ import {
   Spinner,
   IconButton,
   Image,
+  Input,
 } from "@chakra-ui/react";
 import { Table } from "@chakra-ui/react";
 import {
@@ -14,7 +15,6 @@ import {
   Portal,
   CloseButton,
   Stack,
-  Input,
   Text,
   Combobox,
 } from "@chakra-ui/react";
@@ -84,6 +84,8 @@ export default function AdminMovies() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [itemsPerPage] = useState(20);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
   useDebounce(() => setDebouncedInputValueEn(inputValueEn), 300, [
     inputValueEn,
@@ -91,6 +93,7 @@ export default function AdminMovies() {
   useDebounce(() => setDebouncedInputValueFr(inputValueFr), 300, [
     inputValueFr,
   ]);
+  useDebounce(() => setDebouncedSearchTerm(searchTerm), 500, [searchTerm]);
 
   const { collection: collectionEn, set: setEn } = useListCollection<TmdbMovie>(
     {
@@ -144,9 +147,21 @@ export default function AdminMovies() {
     fetchMovies(1);
   }, []);
 
+  useEffect(() => {
+    setCurrentPage(1);
+    fetchMovies(1);
+  }, [debouncedSearchTerm]);
+
   const fetchMovies = (page: number = 1) => {
     setLoading(true);
-    fetch(`/admin/api/movies?page=${page}&limit=${itemsPerPage}`)
+    const searchParams = new URLSearchParams({
+      page: page.toString(),
+      limit: itemsPerPage.toString(),
+    });
+    if (debouncedSearchTerm.trim()) {
+      searchParams.append("search", debouncedSearchTerm.trim());
+    }
+    fetch(`/admin/api/movies?${searchParams.toString()}`)
       .then((res) => res.json())
       .then((data) => {
         setMovies(data.items);
@@ -162,6 +177,15 @@ export default function AdminMovies() {
       setCurrentPage(page);
       fetchMovies(page);
     }
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const clearSearch = () => {
+    setSearchTerm("");
+    setCurrentPage(1);
   };
 
   const handleFormChange = (
@@ -362,10 +386,26 @@ export default function AdminMovies() {
       <Button colorScheme="blue" mb={4} onClick={() => setAddOpen(true)}>
         Add Movie
       </Button>
+      <Box mb={4} display="flex" gap={2} alignItems="center">
+        <Input
+          placeholder="Search movies by title or director..."
+          value={searchTerm}
+          onChange={handleSearchChange}
+          maxW="400px"
+        />
+        {searchTerm && (
+          <Button size="sm" onClick={clearSearch}>
+            Clear
+          </Button>
+        )}
+      </Box>
       <Text mb={4} color="gray.600">
-        Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-        {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems}{" "}
-        movies
+        {debouncedSearchTerm
+          ? `Found ${totalItems} movies matching "${debouncedSearchTerm}"`
+          : `Showing ${(currentPage - 1) * itemsPerPage + 1} to ${Math.min(
+              currentPage * itemsPerPage,
+              totalItems
+            )} of ${totalItems} movies`}
       </Text>
       <Table.Root variant="outline">
         <Table.Header>
