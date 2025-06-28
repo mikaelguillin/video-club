@@ -2,6 +2,7 @@ import { Provider } from "@/components/ui/provider";
 import "../globals.css";
 import AuthGuard from "@/components/admin/AuthGuard";
 import { Toaster } from "@/components/ui/toaster";
+import { SessionProvider } from "next-auth/react";
 
 export default function AdminLayout({
   children,
@@ -9,15 +10,17 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>
         <Provider>
-          <AuthGuard>
-            <>
+          <SessionProvider>
+            <AuthGuard>
+              <>
                 {children}
                 <Toaster />
-            </>
-        </AuthGuard>
+              </>
+            </AuthGuard>
+          </SessionProvider>
         </Provider>
       </body>
     </html>

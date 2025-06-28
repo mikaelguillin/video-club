@@ -1,20 +1,9 @@
 "use client";
-import {
-  Box,
-  Heading,
-  Stack,
-  Link as ChakraLink,
-  Button,
-} from "@chakra-ui/react";
+import { Box, Heading, Stack, Link as ChakraLink } from "@chakra-ui/react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import LogoutButton from "@/components/admin/LogoutButton";
 
 export default function AdminDashboard() {
-  const router = useRouter();
-  const handleLogout = async () => {
-    await fetch("/admin/api/logout", { method: "POST" });
-    router.push("/admin/login");
-  };
   return (
     <Box p={8}>
       <Stack
@@ -24,9 +13,7 @@ export default function AdminDashboard() {
         mb={6}
       >
         <Heading>Admin Dashboard</Heading>
-        <Button colorScheme="red" onClick={handleLogout}>
-          Logout
-        </Button>
+        <LogoutButton />
       </Stack>
       <Stack direction="column" gap={4} alignItems="flex-start">
         <ChakraLink as={Link} href="/admin/movies">

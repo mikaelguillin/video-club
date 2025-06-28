@@ -14,9 +14,10 @@ function getLocale(request: NextRequest) {
 export function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
-    // Skip public files and API routes
+    // Skip public files, API routes, and admin routes
     if (
         pathname.startsWith('/api') ||
+        pathname.startsWith('/admin') ||
         PUBLIC_FILE.test(pathname)
     ) {
         return;

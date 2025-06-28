@@ -7,6 +7,14 @@ export interface Person {
     show?: boolean;
 }
 
+export interface User {
+    _id: string;
+    username: string;
+    password: string;
+    email?: string;
+    role?: string;
+}
+
 interface MovieTranslation {
     title: string;
     overview: string;

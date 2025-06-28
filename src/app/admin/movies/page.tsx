@@ -123,7 +123,6 @@ export default function AdminMovies() {
       { headers: { Authorization: `Bearer ${apiKey}` } }
     );
     const data = await res.json();
-    console.log({ result: data.results });
     setEn(data.results);
   }, [debouncedInputValueEn, setEn]);
 

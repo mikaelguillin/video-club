@@ -1,27 +1,48 @@
 "use client";
 import { useState } from "react";
-import { Box, Button, Stack, Heading, Input, Text } from "@chakra-ui/react";
+import { Box, Button, Stack, Heading, Input } from "@chakra-ui/react";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { toaster } from "@/components/ui/toaster";
 
 export default function AdminLogin() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [isPending, setIsPending] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError("");
-    const res = await fetch("/admin/api/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
-    });
-    if (res.ok) {
-      router.push("/admin");
-    } else {
-      const data = await res.json();
-      setError(data.error || "Login failed");
+    setIsPending(true);
+
+    try {
+      const formData = new FormData(e.currentTarget);
+      const username = formData.get("username") as string;
+      const password = formData.get("password") as string;
+
+      const res = await signIn("credentials", {
+        username,
+        password,
+        redirect: false,
+      });
+
+      if (res?.error) {
+        const errorMessage = res?.error || "Invalid credentials";
+        toaster.create({
+          title: "Login Failed",
+          type: 'error',
+          description: errorMessage,
+        });
+      } else {
+        router.push("/admin");
+      }
+    } catch {
+      const errorMessage = "An error occurred during sign in";
+      toaster.create({
+        title: "Login Error",
+        type: 'error',
+        description: errorMessage,
+      });
+    } finally {
+      setIsPending(false);
     }
   };
 
@@ -42,24 +63,14 @@ export default function AdminLogin() {
         <Stack direction="column" gap={4} alignItems="stretch">
           <Box>
             <label htmlFor="username">Username</label>
-            <Input
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
+            <Input id="username" name="username" type="text" required />
           </Box>
           <Box>
             <label htmlFor="password">Password</label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            <Input id="password" name="password" type="password" required />
           </Box>
-          {error && <Text color="red.500">{error}</Text>}
-          <Button type="submit" colorScheme="blue" w="full">
-            Login
+          <Button type="submit" colorScheme="blue" w="full" loading={isPending}>
+            {isPending ? "Signing in..." : "Login"}
           </Button>
         </Stack>
       </form>
