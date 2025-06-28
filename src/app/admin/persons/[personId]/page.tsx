@@ -41,9 +41,15 @@ interface Movie {
     };
   };
   year: number;
+  director: string;
 }
 
-type TmdbMovie = { id: number; title: string; release_date?: string };
+type DatabaseMovie = {
+  _id: string;
+  translations: { en: { title: string }; fr?: { title: string } };
+  year: number;
+  director: string;
+};
 
 export default function AdminPersonDetails() {
   const { personId } = useParams<{ personId: string }>();
@@ -62,14 +68,13 @@ export default function AdminPersonDetails() {
   const [debouncedInputValue, setDebouncedInputValue] = useState("");
   useDebounce(() => setDebouncedInputValue(inputValue), 300, [inputValue]);
 
-  const { collection, set } = useListCollection<TmdbMovie>({
+  const { collection, set } = useListCollection<DatabaseMovie>({
     initialItems: [],
-    itemToString: (item) =>
-      `${item.title} (${item.release_date?.slice(0, 4) || ""})`,
-    itemToValue: (item) => `${item.id}`,
+    itemToString: (item) => `${item.translations.en.title} (${item.year})`,
+    itemToValue: (item) => item._id,
   });
 
-  const [selectedMovie, setSelectedMovie] = useState<TmdbMovie>();
+  const [selectedMovie, setSelectedMovie] = useState<DatabaseMovie>();
 
   useEffect(() => {
     async function fetchData() {
@@ -112,34 +117,99 @@ export default function AdminPersonDetails() {
     });
     if (res.ok) {
       toaster.create({
-        type: 'success',
-        title: 'Success',
-        description: 'Person updated'
-      })
+        type: "success",
+        title: "Success",
+        description: "Person updated",
+      });
     } else {
       toaster.create({
-        type: 'error',
-        title: 'Error',
-        description: 'Failed to update person'
-      })
+        type: "error",
+        title: "Error",
+        description: "Failed to update person",
+      });
     }
   };
 
-  const tmdbSearchState = useAsync(async () => {
+  const movieSearchState = useAsync(async () => {
     if (!debouncedInputValue) {
       set([]);
       return;
     }
-    const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
     const res = await fetch(
-      `https://api.themoviedb.org/3/search/movie?&query=${encodeURIComponent(
+      `/admin/api/movies/search?search=${encodeURIComponent(
         debouncedInputValue
-      )}`,
-      { headers: { Authorization: `Bearer ${apiKey}` } }
+      )}&personId=${personId}`
     );
     const data = await res.json();
-    set(data.results);
-  }, [debouncedInputValue, set]);
+    set(data.items);
+  }, [debouncedInputValue, set, personId]);
+
+  const handleAddMovie = async () => {
+    if (!selectedMovie) {
+      toaster.create({
+        type: "error",
+        title: "Error",
+        description: "Please select a movie",
+      });
+      return;
+    }
+
+    const res = await fetch(`/admin/api/person/${personId}/movies`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ movieId: selectedMovie._id }),
+    });
+
+    if (res.ok) {
+      onClose();
+      setSelectedMovie(undefined);
+      setInputValue("");
+      set([]);
+      // Refresh the movies list
+      const moviesRes = await fetch(`/admin/api/person/${personId}/movies`);
+      const moviesData = await moviesRes.json();
+      setMovies(moviesData.items);
+      toaster.create({
+        type: "success",
+        title: "Success",
+        description: "Movie added to person",
+      });
+    } else {
+      const errorData = await res.json();
+      toaster.create({
+        type: "error",
+        title: "Error",
+        description: errorData.error || "Failed to add movie",
+      });
+    }
+  };
+
+  const handleRemoveMovie = async (movieId: string) => {
+    const res = await fetch(`/admin/api/person/${personId}/movies`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ movieId }),
+    });
+
+    if (res.ok) {
+      // Refresh the movies list
+      const moviesRes = await fetch(`/admin/api/person/${personId}/movies`);
+      const moviesData = await moviesRes.json();
+      setMovies(moviesData.items);
+      toaster.create({
+        type: "success",
+        title: "Success",
+        description: "Movie removed from person",
+      });
+    } else {
+      const errorData = await res.json();
+      toaster.create({
+        type: "error",
+        title: "Error",
+        description: errorData.error || "Failed to remove movie",
+      });
+    }
+  };
 
   if (loading) {
     return (
@@ -202,7 +272,7 @@ export default function AdminPersonDetails() {
         Movies
       </Heading>
       <Button colorScheme="blue" mb={4} onClick={onOpen}>
-        Add Movie (from TMDB)
+        Add Movie (from Database)
       </Button>
       <Table.Root variant="outline">
         <Table.Header>
@@ -227,7 +297,12 @@ export default function AdminPersonDetails() {
                 <Table.Cell>{movie.translations.en.title}</Table.Cell>
                 <Table.Cell>{movie.year}</Table.Cell>
                 <Table.Cell>
-                  <IconButton aria-label="Remove" size="sm" colorScheme="red">
+                  <IconButton
+                    aria-label="Remove"
+                    size="sm"
+                    colorScheme="red"
+                    onClick={() => handleRemoveMovie(movie._id)}
+                  >
                     🗑️
                   </IconButton>
                 </Table.Cell>
@@ -247,23 +322,30 @@ export default function AdminPersonDetails() {
           <Dialog.Positioner>
             <Dialog.Content>
               <Dialog.Header>
-                <Dialog.Title>Search Movie from TMDB</Dialog.Title>
+                <Dialog.Title>Search Movie from Database</Dialog.Title>
                 <Dialog.CloseTrigger asChild>
                   <CloseButton size="sm" onClick={onClose} />
                 </Dialog.CloseTrigger>
               </Dialog.Header>
               <Dialog.Body>
                 <Stack gap={4}>
-                  <p>Selected movie: {selectedMovie?.title}</p>
+                  {selectedMovie && (
+                    <Text>
+                      Selected movie: {selectedMovie.translations.en.title} (
+                      {selectedMovie.year})
+                    </Text>
+                  )}
                   <Combobox.Root
                     collection={collection}
-                    onInputValueChange={(e) => setInputValue(e.inputValue)}
+                    onInputValueChange={({ inputValue }) =>
+                      setInputValue(inputValue)
+                    }
                     onValueChange={(selected) => {
                       setSelectedMovie(selected.items[0]);
                     }}
                   >
                     <Combobox.Control>
-                      <Combobox.Input placeholder="Search for a movie title..." />
+                      <Combobox.Input placeholder="Search for a movie title or director..." />
                       <Combobox.IndicatorGroup>
                         <Combobox.ClearTrigger />
                         <Combobox.Trigger />
@@ -271,21 +353,23 @@ export default function AdminPersonDetails() {
                     </Combobox.Control>
                     <Combobox.Positioner>
                       <Combobox.Content>
-                        {tmdbSearchState.loading ? (
+                        {movieSearchState.loading ? (
                           <Box p={2} textAlign="center">
                             <Spinner size="sm" />
                           </Box>
-                        ) : tmdbSearchState.error ? (
+                        ) : movieSearchState.error ? (
                           <Box p={2} textAlign="center">
-                            Error fetching movies
+                            Error searching movies
                           </Box>
                         ) : (
                           collection.items.map((item) => (
-                            <Combobox.Item item={item} key={item.id}>
-                              {item.title}{" "}
-                              {item.release_date
-                                ? `(${item.release_date.slice(0, 4)})`
-                                : ""}
+                            <Combobox.Item item={item} key={item._id}>
+                              <Text>
+                                {item.translations.en.title} ({item.year})
+                              </Text>
+                              <Text fontSize="sm" color="gray.500">
+                                {item.director}
+                              </Text>
                               <Combobox.ItemIndicator />
                             </Combobox.Item>
                           ))
@@ -293,6 +377,13 @@ export default function AdminPersonDetails() {
                       </Combobox.Content>
                     </Combobox.Positioner>
                   </Combobox.Root>
+                  <Button
+                    colorScheme="blue"
+                    onClick={handleAddMovie}
+                    disabled={!selectedMovie}
+                  >
+                    Add Movie
+                  </Button>
                 </Stack>
               </Dialog.Body>
             </Dialog.Content>
