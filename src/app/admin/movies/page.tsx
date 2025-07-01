@@ -8,50 +8,26 @@ import {
   IconButton,
   Image,
   Input,
-} from "@chakra-ui/react";
-import { Table } from "@chakra-ui/react";
-import {
+  Field,
   Dialog,
   Portal,
   CloseButton,
   Stack,
   Text,
   Combobox,
+  Table
 } from "@chakra-ui/react";
 import { toaster } from "@/components/ui/toaster";
 import { useAsync, useDebounce } from "react-use";
 import { useListCollection } from "@chakra-ui/react";
+import { BsPencil, BsTrash } from "react-icons/bs";
+import type { Movie } from "@/types";
 
-interface Movie {
-  _id: string;
-  director: string;
-  year: number;
-  translations: {
-    en: {
-      title: string;
-      overview: string;
-      poster_url: string;
-    };
-    [key: string]: {
-      title?: string;
-      overview?: string;
-      poster_url?: string;
-    };
-  };
-}
-
-type MovieForm = {
-  director: string;
-  year: number;
-  translations: Record<
-    string,
-    { title: string; overview: string; poster_url: string }
-  >;
-};
+type MovieForm = Omit<Movie, '_id' | 'backdrop_url'>
 
 const defaultMovieForm: MovieForm = {
   director: "",
-  year: new Date().getFullYear(),
+  year: "",
   translations: {
     en: { title: "", overview: "", poster_url: "" },
   },
@@ -78,8 +54,6 @@ export default function AdminMovies() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [inputValueEn, setInputValueEn] = useState("");
   const [debouncedInputValueEn, setDebouncedInputValueEn] = useState("");
-  const [inputValueFr, setInputValueFr] = useState("");
-  const [debouncedInputValueFr, setDebouncedInputValueFr] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
@@ -90,9 +64,6 @@ export default function AdminMovies() {
   useDebounce(() => setDebouncedInputValueEn(inputValueEn), 300, [
     inputValueEn,
   ]);
-  useDebounce(() => setDebouncedInputValueFr(inputValueFr), 300, [
-    inputValueFr,
-  ]);
   useDebounce(() => setDebouncedSearchTerm(searchTerm), 500, [searchTerm]);
 
   const { collection: collectionEn, set: setEn } = useListCollection<TmdbMovie>(
@@ -102,45 +73,26 @@ export default function AdminMovies() {
       itemToValue: (item) => `${item.id}`,
     }
   );
-  const { collection: collectionFr, set: setFr } = useListCollection<TmdbMovie>(
-    {
-      initialItems: [],
-      itemToString: (item) => item.title,
-      itemToValue: (item) => `${item.id}`,
-    }
-  );
+
+  const fetchMovie = async (language: string, year?: string) => {
+    const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+    let url = `https://api.themoviedb.org/3/search/movie?&query=${encodeURIComponent(
+        debouncedInputValueEn
+      )}&language=${language}`;
+
+    if(year) url += `&year=${year}`;
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${apiKey}` } });
+    return res.json();
+  }
 
   const tmdbSearchStateEn = useAsync(async () => {
     if (!debouncedInputValueEn) {
       setEn([]);
       return;
     }
-    const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-    const res = await fetch(
-      `https://api.themoviedb.org/3/search/movie?&query=${encodeURIComponent(
-        debouncedInputValueEn
-      )}&language=en`,
-      { headers: { Authorization: `Bearer ${apiKey}` } }
-    );
-    const data = await res.json();
+    const data = await fetchMovie('en-US');
     setEn(data.results);
   }, [debouncedInputValueEn, setEn]);
-
-  const tmdbSearchStateFr = useAsync(async () => {
-    if (!debouncedInputValueFr) {
-      setFr([]);
-      return;
-    }
-    const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-    const res = await fetch(
-      `https://api.themoviedb.org/3/search/movie?&query=${encodeURIComponent(
-        debouncedInputValueFr
-      )}&language=fr`,
-      { headers: { Authorization: `Bearer ${apiKey}` } }
-    );
-    const data = await res.json();
-    setFr(data.results);
-  }, [debouncedInputValueFr, setFr]);
 
   useEffect(() => {
     fetchMovies(1);
@@ -380,9 +332,9 @@ export default function AdminMovies() {
   };
 
   return (
-    <Box p={8}>
+    <>
       <Heading mb={6}>Movies</Heading>
-      <Button colorScheme="blue" mb={4} onClick={() => setAddOpen(true)}>
+      <Button colorPalette="blue" mb={4} onClick={() => setAddOpen(true)}>
         Add Movie
       </Button>
       <Box mb={4} display="flex" gap={2} alignItems="center">
@@ -438,20 +390,21 @@ export default function AdminMovies() {
                 <Table.Cell>{movie.director}</Table.Cell>
                 <Table.Cell>
                   <IconButton
+                    colorPalette="blue"
                     aria-label="Edit"
                     size="sm"
                     mr={2}
                     onClick={() => handleEditMovie(movie)}
                   >
-                    ✏️
+                    <BsPencil />
                   </IconButton>
                   <IconButton
                     aria-label="Delete"
                     size="sm"
-                    colorScheme="red"
+                    colorPalette="red"
                     onClick={() => setDeleteId(movie._id)}
                   >
-                    🗑️
+                    <BsTrash />
                   </IconButton>
                 </Table.Cell>
               </Table.Row>
@@ -478,20 +431,20 @@ export default function AdminMovies() {
               </Dialog.Header>
               <Dialog.Body>
                 <Stack gap={4}>
-                  {/* English TMDB Combobox */}
-                  <Text fontWeight="bold">English (en)</Text>
                   <Combobox.Root
                     collection={collectionEn}
                     onInputValueChange={({ inputValue }) =>
                       setInputValueEn(inputValue)
                     }
-                    onValueChange={({ items }) => {
+                    onValueChange={async({ items }) => {
                       const item = items[0];
                       if (item) {
+                        const data = await Promise.all([fetchMovie('fr-FR', item.release_date?.slice(0, 4))]);
+                        const frenchVersion = data[0].results[0];
                         setForm((prev) => ({
                           ...prev,
                           year: item.release_date
-                            ? parseInt(item.release_date.slice(0, 4))
+                            ? item.release_date.slice(0, 4)
                             : prev.year,
                           translations: {
                             ...prev.translations,
@@ -502,13 +455,20 @@ export default function AdminMovies() {
                                 ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
                                 : "",
                             },
+                            fr: {
+                              title: frenchVersion.title,
+                              overview: frenchVersion.overview,
+                              poster_url: frenchVersion.poster_path
+                                ? `https://image.tmdb.org/t/p/w500${frenchVersion.poster_path}`
+                                : "",
+                            }
                           },
                         }));
                       }
                     }}
                   >
                     <Combobox.Control>
-                      <Combobox.Input placeholder="Search movie from TMDB (English)..." />
+                      <Combobox.Input placeholder="Search movie from TMDB..." />
                       <Combobox.IndicatorGroup>
                         <Combobox.ClearTrigger />
                         <Combobox.Trigger />
@@ -526,7 +486,7 @@ export default function AdminMovies() {
                           </Box>
                         ) : (
                           collectionEn.items.map((item) => (
-                            <Combobox.Item item={item} key={item.id}>
+                            <Combobox.Item item={item} key={item.id} justifyContent="initial">
                               <Image
                                 src={
                                   item.poster_path
@@ -538,7 +498,9 @@ export default function AdminMovies() {
                                 width={45}
                                 style={{ objectFit: "cover", marginRight: 8 }}
                               />
-                              <span>{item.title}</span>
+                              <span>
+                                {item.title} {item.release_date ? `(${item.release_date.slice(0, 4)})` : ''}
+                              </span>
                               <Combobox.ItemIndicator />
                             </Combobox.Item>
                           ))
@@ -546,129 +508,59 @@ export default function AdminMovies() {
                       </Combobox.Content>
                     </Combobox.Positioner>
                   </Combobox.Root>
-                  {/* English manual fields */}
-                  <Input
-                    name="director"
-                    placeholder="Director"
-                    value={form.director}
-                    onChange={handleFormChange}
-                  />
-                  <Input
-                    name="year"
-                    type="number"
-                    placeholder="Year"
-                    value={form.year}
-                    onChange={handleFormChange}
-                  />
-                  <Input
-                    name="title"
-                    placeholder="Title (en)"
-                    value={form.translations.en.title}
-                    onChange={(e) => handleFormChange(e, "en")}
-                  />
-                  <Input
-                    name="overview"
-                    placeholder="Overview (en)"
-                    value={form.translations.en.overview}
-                    onChange={(e) => handleFormChange(e, "en")}
-                  />
-                  <Input
-                    name="poster_url"
-                    placeholder="Poster URL (en)"
-                    value={form.translations.en.poster_url}
-                    onChange={(e) => handleFormChange(e, "en")}
-                  />
-                  {/* French TMDB Combobox */}
-                  <Text fontWeight="bold">French (fr)</Text>
-                  <Combobox.Root
-                    collection={collectionFr}
-                    onInputValueChange={({ inputValue }) =>
-                      setInputValueFr(inputValue)
-                    }
-                    onValueChange={({ items }) => {
-                      const item = items[0];
-                      if (item) {
-                        setForm((prev) => ({
-                          ...prev,
-                          translations: {
-                            ...prev.translations,
-                            fr: {
-                              title: item.title || "",
-                              overview: item.overview || "",
-                              poster_url: item.poster_path
-                                ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
-                                : "",
-                            },
-                          },
-                        }));
-                      }
-                    }}
-                  >
-                    <Combobox.Control>
-                      <Combobox.Input placeholder="Rechercher un film sur TMDB (Français)..." />
-                      <Combobox.IndicatorGroup>
-                        <Combobox.ClearTrigger />
-                        <Combobox.Trigger />
-                      </Combobox.IndicatorGroup>
-                    </Combobox.Control>
-                    <Combobox.Positioner>
-                      <Combobox.Content>
-                        {tmdbSearchStateFr.loading ? (
-                          <Box p={2} textAlign="center">
-                            <Spinner size="sm" />
-                          </Box>
-                        ) : tmdbSearchStateFr.error ? (
-                          <Box p={2} textAlign="center">
-                            Error fetching movies
-                          </Box>
-                        ) : (
-                          collectionFr.items.map((item) => (
-                            <Combobox.Item item={item} key={item.id}>
-                              <Image
-                                src={
-                                  item.poster_path
-                                    ? `https://image.tmdb.org/t/p/w45${item.poster_path}`
-                                    : "/placeholder.png"
-                                }
-                                alt=""
-                                height={67}
-                                width={45}
-                                style={{ objectFit: "cover", marginRight: 8 }}
-                              />
-                              <span>{item.title}</span>
-                              <Combobox.ItemIndicator />
-                            </Combobox.Item>
-                          ))
-                        )}
-                      </Combobox.Content>
-                    </Combobox.Positioner>
-                  </Combobox.Root>
-                  {/* French manual fields */}
-                  <Input
-                    name="title"
-                    placeholder="Titre (fr)"
-                    value={form.translations.fr?.title || ""}
-                    onChange={(e) => handleFormChange(e, "fr")}
-                  />
-                  <Input
-                    name="overview"
-                    placeholder="Résumé (fr)"
-                    value={form.translations.fr?.overview || ""}
-                    onChange={(e) => handleFormChange(e, "fr")}
-                  />
-                  <Input
-                    name="poster_url"
-                    placeholder="URL de l'affiche (fr)"
-                    value={form.translations.fr?.poster_url || ""}
-                    onChange={(e) => handleFormChange(e, "fr")}
-                  />
+                  <Field.Root>
+                    <Field.Label>Title</Field.Label>
+                    <Input
+                      name="title"
+                      placeholder="Title"
+                      value={form.translations.en.title}
+                      onChange={(e) => handleFormChange(e, "en")}
+                    />
+                  </Field.Root>
+                  <Field.Root>
+                    <Field.Label>Director</Field.Label>
+                    <Input
+                      name="director"
+                      placeholder="Director"
+                      value={form.director}
+                      onChange={handleFormChange}
+                    />
+                  </Field.Root>
+                  <Field.Root>
+                    <Field.Label>Year</Field.Label>
+                    <Input
+                      name="year"
+                      type="number"
+                      placeholder="Year"
+                      value={form.year}
+                      onChange={handleFormChange}
+                    />
+                  </Field.Root>
+                  <Field.Root>
+                    <Field.Label>Overview</Field.Label>
+                    <Input
+                      name="overview"
+                      placeholder="Overview"
+                      value={form.translations.en.overview}
+                      onChange={(e) => handleFormChange(e, "en")}
+                    />
+                  </Field.Root>
+                  <Field.Root>
+                    <Field.Label>Poster URL</Field.Label>
+                    <Input
+                      name="poster_url"
+                      placeholder="Poster URL"
+                      value={form.translations.en.poster_url}
+                      onChange={(e) => handleFormChange(e, "en")}
+                    />
+                  </Field.Root>
                 </Stack>
               </Dialog.Body>
               <Dialog.Footer>
-                <Button colorScheme="blue" mr={3} onClick={handleAddMovie}>
+                <Button colorPalette="blue" mr={3} onClick={handleAddMovie}>
                   Add
                 </Button>
-                <Button onClick={() => setAddOpen(false)}>Cancel</Button>
+                <Button variant="surface" onClick={() => setAddOpen(false)}>Cancel</Button>
               </Dialog.Footer>
             </Dialog.Content>
           </Dialog.Positioner>
@@ -692,45 +584,69 @@ export default function AdminMovies() {
               </Dialog.Header>
               <Dialog.Body>
                 <Stack gap={4}>
-                  <Input
-                    name="director"
-                    placeholder="Director"
-                    value={form.director}
-                    onChange={handleFormChange}
-                  />
-                  <Input
-                    name="year"
-                    type="number"
-                    placeholder="Year"
-                    value={form.year}
-                    onChange={handleFormChange}
-                  />
-                  <Text fontWeight="bold">English (en)</Text>
-                  <Input
-                    name="title"
-                    placeholder="Title"
-                    value={form.translations.en.title}
-                    onChange={(e) => handleFormChange(e, "en")}
-                  />
-                  <Input
-                    name="overview"
-                    placeholder="Overview"
-                    value={form.translations.en.overview}
-                    onChange={(e) => handleFormChange(e, "en")}
-                  />
-                  <Input
-                    name="poster_url"
-                    placeholder="Poster URL"
-                    value={form.translations.en.poster_url}
-                    onChange={(e) => handleFormChange(e, "en")}
-                  />
+                  <Field.Root>
+                    <Field.Label>
+                      Title
+                    </Field.Label>
+                    <Input
+                      name="title"
+                      placeholder="Title"
+                      value={form.translations.en.title}
+                      onChange={(e) => handleFormChange(e, "en")}
+                    />
+                  </Field.Root>
+                  <Field.Root>
+                    <Field.Label>
+                      Director
+                    </Field.Label>
+                    <Input
+                      name="director"
+                      placeholder="Director"
+                      value={form.director}
+                      onChange={handleFormChange}
+                    />
+                  </Field.Root>
+                  <Field.Root>
+                    <Field.Label>
+                      Year
+                    </Field.Label>
+                    <Input
+                      name="year"
+                      type="number"
+                      placeholder="Year"
+                      value={form.year}
+                      onChange={handleFormChange}
+                    />
+                  </Field.Root>
+                  <Field.Root>
+                    <Field.Label>
+                      Overview
+                    </Field.Label>
+                    <Input
+                      name="overview"
+                      placeholder="Overview"
+                      value={form.translations.en.overview}
+                      onChange={(e) => handleFormChange(e, "en")}
+                      />
+                  </Field.Root>
+                  <Field.Root>
+                    <Field.Label>
+                      Poster URL
+                    </Field.Label>
+                    <Input
+                      name="poster_url"
+                      placeholder="Poster URL"
+                      value={form.translations.en.poster_url}
+                      onChange={(e) => handleFormChange(e, "en")}
+                    />
+                  </Field.Root>
                 </Stack>
               </Dialog.Body>
               <Dialog.Footer>
-                <Button colorScheme="green" mr={3} onClick={handleUpdateMovie}>
+                <Button colorPalette="blue" mr={3} onClick={handleUpdateMovie}>
                   Save
                 </Button>
-                <Button onClick={() => setEditOpen(false)}>Cancel</Button>
+                <Button variant="surface" onClick={() => setEditOpen(false)}>Cancel</Button>
               </Dialog.Footer>
             </Dialog.Content>
           </Dialog.Positioner>
@@ -760,9 +676,9 @@ export default function AdminMovies() {
                   be undone.
                 </Text>
                 <Stack direction="row" justify="flex-end" gap={2}>
-                  <Button onClick={() => setDeleteId(null)}>Cancel</Button>
+                  <Button variant="surface" onClick={() => setDeleteId(null)}>Cancel</Button>
                   <Button
-                    colorScheme="red"
+                    colorPalette="red"
                     onClick={handleDeleteMovie}
                     loading={deleteLoading}
                   >
@@ -774,6 +690,6 @@ export default function AdminMovies() {
           </Dialog.Positioner>
         </Portal>
       </Dialog.Root>
-    </Box>
+    </>
   );
 }

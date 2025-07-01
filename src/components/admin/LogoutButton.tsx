@@ -6,8 +6,7 @@ export default function LogoutButton() {
   return (
     <Button
       onClick={() => signOut({ callbackUrl: "/admin/login" })}
-      colorScheme="red"
-      variant="outline"
+      colorPalette="red"
       size="sm"
     >
       Sign Out

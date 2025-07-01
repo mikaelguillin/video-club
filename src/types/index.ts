@@ -23,7 +23,7 @@ interface MovieTranslation {
 export interface Movie {
     _id: string;
     director: string;
-    year: number;
+    year: string;
     backdrop_url: string;
     translations: Record<string, MovieTranslation>;
 } 

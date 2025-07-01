@@ -1,9 +1,15 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Box, Heading, Button, Spinner, IconButton, Span, Image, useDisclosure } from "@chakra-ui/react";
-import { Table } from "@chakra-ui/react";
-import { useRouter } from "next/navigation";
 import {
+  Box,
+  Heading,
+  Button,
+  Spinner,
+  IconButton,
+  Span,
+  Image,
+  useDisclosure,
+  Field,
   Dialog,
   Portal,
   CloseButton,
@@ -11,10 +17,13 @@ import {
   Combobox,
   Input,
   useListCollection,
+  Table,
+  Text
 } from "@chakra-ui/react";
-import { Text } from "@chakra-ui/react";
+import { useRouter } from "next/navigation";
 import { useAsync, useDebounce } from "react-use";
 import { toaster } from "@/components/ui/toaster";
+import { BsPencil, BsTrash } from "react-icons/bs";
 
 interface Person {
   _id: string;
@@ -34,7 +43,8 @@ export default function AdminPersons() {
     name: "",
     profile_url: "",
     date: "",
-    show: true
+    video: "",
+    show: true,
   });
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -75,16 +85,12 @@ export default function AdminPersons() {
   }, [debouncedInputValue, set]);
 
   const handleAddPerson = async () => {
-    if (
-      !addForm.name ||
-      !addForm.profile_url ||
-      !addForm.date
-    ) {
-        toaster.create({
-            title: 'Error',
-            type: 'error',
-            description: 'All fields are required'
-        });
+    if (!addForm.name || !addForm.profile_url || !addForm.date) {
+      toaster.create({
+        title: "Error",
+        type: "error",
+        description: "All fields are required",
+      });
       return;
     }
     const res = await fetch("/admin/api/persons", {
@@ -93,13 +99,14 @@ export default function AdminPersons() {
       body: JSON.stringify({
         name: addForm.name,
         profile_url: addForm.profile_url,
-        date: addForm.date,
-        show: addForm.show
+        date: new Date(addForm.date),
+        video: addForm.video,
+        show: addForm.show,
       }),
     });
     if (res.ok) {
       onClose();
-      setAddForm({ name: "", profile_url: "", date: "", show: true });
+      setAddForm({ name: "", profile_url: "", date: "", video: "", show: true });
       setInputValue("");
       set([]);
       setLoading(true);
@@ -108,45 +115,47 @@ export default function AdminPersons() {
         .then((data) => setPersons(data.items))
         .finally(() => setLoading(false));
       toaster.create({
-        title: 'Success',
-        type: 'success',
-        description: 'Person added'
-    });
+        title: "Success",
+        type: "success",
+        description: "Person added",
+      });
     } else {
       toaster.create({
-        title: 'Error',
-        type: 'error',
-        description: 'Failed to add person'
-    });
+        title: "Error",
+        type: "error",
+        description: "Failed to add person",
+      });
     }
   };
 
   const handleDeletePerson = async () => {
     if (!deleteId) return;
     setDeleteLoading(true);
-    const res = await fetch(`/admin/api/person/${deleteId}`, { method: "DELETE" });
+    const res = await fetch(`/admin/api/person/${deleteId}`, {
+      method: "DELETE",
+    });
     if (res.ok) {
       setPersons((prev) => prev.filter((p) => p._id !== deleteId));
       toaster.create({
-        title: 'Success',
-        type: 'success',
-        description: 'Person deleted'
-    });
+        title: "Success",
+        type: "success",
+        description: "Person deleted",
+      });
     } else {
       toaster.create({
-        title: 'Error',
-        type: 'error',
-        description: 'Failed to delete person'
-    });
+        title: "Error",
+        type: "error",
+        description: "Failed to delete person",
+      });
     }
     setDeleteId(null);
     setDeleteLoading(false);
   };
 
   return (
-    <Box p={8}>
+    <>
       <Heading mb={6}>Persons</Heading>
-      <Button colorScheme="blue" mb={4} onClick={onOpen}>
+      <Button colorPalette="blue" mb={4} onClick={onOpen}>
         Add Person (from TMDB)
       </Button>
       <Table.Root variant="outline">
@@ -185,21 +194,22 @@ export default function AdminPersons() {
                 <Table.Cell>{person.show ? "Yes" : "No"}</Table.Cell>
                 <Table.Cell>
                   <IconButton
+                    colorPalette="blue"
                     aria-label="Edit"
                     size="sm"
                     mr={2}
                     onClick={() => router.push(`/admin/persons/${person._id}`)}
                   >
-                    ✏️
+                    <BsPencil />
                   </IconButton>
                   <IconButton
                     aria-label="Delete"
                     size="sm"
-                    colorScheme="red"
+                    colorPalette="red"
                     mr={2}
                     onClick={() => setDeleteId(person._id)}
                   >
-                    🗑️
+                    <BsTrash />
                   </IconButton>
                 </Table.Cell>
               </Table.Row>
@@ -216,10 +226,7 @@ export default function AdminPersons() {
               <Dialog.Header>
                 <Dialog.Title>Add Person from TMDB</Dialog.Title>
                 <Dialog.CloseTrigger asChild>
-                  <CloseButton
-                    size="sm"
-                    onClick={onClose}
-                  />
+                  <CloseButton size="sm" onClick={onClose} />
                 </Dialog.CloseTrigger>
               </Dialog.Header>
               <Dialog.Body>
@@ -227,7 +234,7 @@ export default function AdminPersons() {
                   <Combobox.Root
                     collection={collection}
                     onInputValueChange={({ inputValue }) =>
-                        setInputValue(inputValue)
+                      setInputValue(inputValue)
                     }
                     onValueChange={({ items }) => {
                       const item = items[0];
@@ -259,41 +266,73 @@ export default function AdminPersons() {
                           <Box p={2} textAlign="center">
                             Error fetching movies
                           </Box>
-                        ) : collection.items.map((item) => (
-                          <Combobox.Item item={item} key={item.id}>
-                            <Image
-                                src={item.profile_path ? `https://image.tmdb.org/t/p/w45${item.profile_path}` : '/placeholder.png'}
+                        ) : (
+                          collection.items.map((item) => (
+                            <Combobox.Item item={item} key={item.id}>
+                              <Image
+                                src={
+                                  item.profile_path
+                                    ? `https://image.tmdb.org/t/p/w45${item.profile_path}`
+                                    : "/placeholder.png"
+                                }
                                 alt=""
                                 height={67}
                                 width={45}
-                            />
-                            <Span>{item.name}</Span>
-                            <Combobox.ItemIndicator />
-                          </Combobox.Item>
-                        ))}
+                              />
+                              <Span>{item.name}</Span>
+                              <Combobox.ItemIndicator />
+                            </Combobox.Item>
+                          ))
+                        )}
                       </Combobox.Content>
                     </Combobox.Positioner>
                   </Combobox.Root>
-                  <Input
-                    type="date"
-                    placeholder="Interview Date"
-                    value={addForm.date}
-                    onChange={(e) =>
-                      setAddForm((f) => ({ ...f, date: e.target.value }))
-                    }
-                    required
-                  />
+                  <Field.Root>
+                    <Field.Label>
+                      Interview Date
+                    </Field.Label>
+                    <Input
+                      type="date"
+                      placeholder="Interview Date"
+                      value={addForm.date}
+                      onChange={(e) =>
+                        setAddForm((f) => ({ ...f, date: e.target.value }))
+                      }
+                      required
+                    />
+                  </Field.Root>
+                  <Field.Root>
+                    <Field.Label>
+                      Video interview ID
+                    </Field.Label>
+                    <Input
+                      placeholder="Video interview ID"
+                      value={addForm.video}
+                      onChange={(e) =>
+                        setAddForm((f) => ({ ...f, video: e.target.value }))
+                      }
+                      required
+                    />
+                  </Field.Root>
                 </Stack>
               </Dialog.Body>
               <Dialog.Footer>
-                <Button colorScheme="blue" mr={3} onClick={handleAddPerson}>
+                <Button colorPalette="blue" mr={3} onClick={handleAddPerson}>
                   Add
                 </Button>
-                <Button onClick={() => {
+                <Button
+                  onClick={() => {
                     onClose();
-                    setAddForm({ name: "", profile_url: "", date: "", show: true })
-                }}>
-                    Cancel
+                    setAddForm({
+                      name: "",
+                      profile_url: "",
+                      date: "",
+                      video: "",
+                      show: true,
+                    });
+                  }}
+                >
+                  Cancel
                 </Button>
               </Dialog.Footer>
             </Dialog.Content>
@@ -323,9 +362,9 @@ export default function AdminPersons() {
                   cannot be undone.
                 </Text>
                 <Stack direction="row" justify="flex-end" gap={2}>
-                  <Button onClick={() => setDeleteId(null)}>Cancel</Button>
+                  <Button variant="surface" onClick={() => setDeleteId(null)}>Cancel</Button>
                   <Button
-                    colorScheme="red"
+                    colorPalette="red"
                     onClick={handleDeletePerson}
                     loading={deleteLoading}
                   >
@@ -337,6 +376,6 @@ export default function AdminPersons() {
           </Dialog.Positioner>
         </Portal>
       </Dialog.Root>
-    </Box>
+    </>
   );
 }

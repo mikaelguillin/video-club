@@ -28,7 +28,7 @@ export default function AdminLogin() {
         const errorMessage = res?.error || "Invalid credentials";
         toaster.create({
           title: "Login Failed",
-          type: 'error',
+          type: "error",
           description: errorMessage,
         });
       } else {
@@ -38,7 +38,7 @@ export default function AdminLogin() {
       const errorMessage = "An error occurred during sign in";
       toaster.create({
         title: "Login Error",
-        type: 'error',
+        type: "error",
         description: errorMessage,
       });
     } finally {
@@ -69,7 +69,12 @@ export default function AdminLogin() {
             <label htmlFor="password">Password</label>
             <Input id="password" name="password" type="password" required />
           </Box>
-          <Button type="submit" colorScheme="blue" w="full" loading={isPending}>
+          <Button
+            type="submit"
+            colorPalette="blue"
+            w="full"
+            loading={isPending}
+          >
             {isPending ? "Signing in..." : "Login"}
           </Button>
         </Stack>

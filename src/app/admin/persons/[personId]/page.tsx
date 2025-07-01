@@ -17,39 +17,12 @@ import {
   CloseButton,
   Combobox,
   useListCollection,
+  Image,
 } from "@chakra-ui/react";
 import { useAsync, useDebounce } from "react-use";
 import { toaster } from "@/components/ui/toaster";
-
-interface Person {
-  _id: string;
-  name: string;
-  date: string | number | Date;
-  show: boolean;
-  video: string;
-  profile_url: string;
-}
-
-interface Movie {
-  _id: string;
-  translations: {
-    en: {
-      title: string;
-    };
-    [key: string]: {
-      title?: string;
-    };
-  };
-  year: number;
-  director: string;
-}
-
-type DatabaseMovie = {
-  _id: string;
-  translations: { en: { title: string }; fr?: { title: string } };
-  year: number;
-  director: string;
-};
+import { BsTrash } from "react-icons/bs";
+import type { Movie, Person } from "@/types";
 
 export default function AdminPersonDetails() {
   const { personId } = useParams<{ personId: string }>();
@@ -68,13 +41,13 @@ export default function AdminPersonDetails() {
   const [debouncedInputValue, setDebouncedInputValue] = useState("");
   useDebounce(() => setDebouncedInputValue(inputValue), 300, [inputValue]);
 
-  const { collection, set } = useListCollection<DatabaseMovie>({
+  const { collection, set } = useListCollection<Movie>({
     initialItems: [],
     itemToString: (item) => `${item.translations.en.title} (${item.year})`,
     itemToValue: (item) => item._id,
   });
 
-  const [selectedMovie, setSelectedMovie] = useState<DatabaseMovie>();
+  const [selectedMovie, setSelectedMovie] = useState<Movie>();
 
   useEffect(() => {
     async function fetchData() {
@@ -227,7 +200,7 @@ export default function AdminPersonDetails() {
   }
 
   return (
-    <Box p={8}>
+    <>
       <Heading mb={6}>Person Details</Heading>
       <Stack gap={4} mb={8} maxW="md">
         <Box>
@@ -264,14 +237,14 @@ export default function AdminPersonDetails() {
             onChange={handleChange}
           />
         </Box>
-        <Button colorScheme="green" onClick={handleSave}>
+        <Button colorPalette="green" onClick={handleSave}>
           Save
         </Button>
       </Stack>
       <Heading size="md" mb={4}>
         Movies
       </Heading>
-      <Button colorScheme="blue" mb={4} onClick={onOpen}>
+      <Button colorPalette="blue" mb={4} onClick={onOpen}>
         Add Movie (from Database)
       </Button>
       <Table.Root variant="outline">
@@ -300,10 +273,10 @@ export default function AdminPersonDetails() {
                   <IconButton
                     aria-label="Remove"
                     size="sm"
-                    colorScheme="red"
+                    colorPalette="red"
                     onClick={() => handleRemoveMovie(movie._id)}
                   >
-                    🗑️
+                    <BsTrash />
                   </IconButton>
                 </Table.Cell>
               </Table.Row>
@@ -312,7 +285,6 @@ export default function AdminPersonDetails() {
         </Table.Body>
       </Table.Root>
       <Dialog.Root
-        size="cover"
         placement="center"
         motionPreset="slide-in-bottom"
         open={open}
@@ -329,12 +301,6 @@ export default function AdminPersonDetails() {
               </Dialog.Header>
               <Dialog.Body>
                 <Stack gap={4}>
-                  {selectedMovie && (
-                    <Text>
-                      Selected movie: {selectedMovie.translations.en.title} (
-                      {selectedMovie.year})
-                    </Text>
-                  )}
                   <Combobox.Root
                     collection={collection}
                     onInputValueChange={({ inputValue }) =>
@@ -363,12 +329,16 @@ export default function AdminPersonDetails() {
                           </Box>
                         ) : (
                           collection.items.map((item) => (
-                            <Combobox.Item item={item} key={item._id}>
+                            <Combobox.Item item={item} key={item._id} justifyContent="initial">
+                              <Image
+                                src={item.translations.en.poster_url}
+                                alt=""
+                                height={67}
+                                width={45}
+                                style={{ objectFit: "cover", marginRight: 8 }}
+                              />
                               <Text>
                                 {item.translations.en.title} ({item.year})
-                              </Text>
-                              <Text fontSize="sm" color="gray.500">
-                                {item.director}
                               </Text>
                               <Combobox.ItemIndicator />
                             </Combobox.Item>
@@ -378,7 +348,7 @@ export default function AdminPersonDetails() {
                     </Combobox.Positioner>
                   </Combobox.Root>
                   <Button
-                    colorScheme="blue"
+                    colorPalette="blue"
                     onClick={handleAddMovie}
                     disabled={!selectedMovie}
                   >
@@ -390,6 +360,6 @@ export default function AdminPersonDetails() {
           </Dialog.Positioner>
         </Portal>
       </Dialog.Root>
-    </Box>
+    </>
   );
 }

@@ -1,28 +1,31 @@
 "use client";
-import { Box, Heading, Stack, Link as ChakraLink } from "@chakra-ui/react";
+import { Stack, Link as ChakraLink } from "@chakra-ui/react";
 import Link from "next/link";
-import LogoutButton from "@/components/admin/LogoutButton";
+import { BsFilm, BsPersonFill } from "react-icons/bs";
 
 export default function AdminDashboard() {
   return (
-    <Box p={8}>
-      <Stack
-        direction="row"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={6}
+    <Stack direction="row" gap={4} alignItems="center">
+      <ChakraLink
+        as={Link}
+        href="/admin/movies"
+        border="1px solid"
+        p={10}
+        borderRadius="md"
+        fontSize="2xl"
       >
-        <Heading>Admin Dashboard</Heading>
-        <LogoutButton />
-      </Stack>
-      <Stack direction="column" gap={4} alignItems="flex-start">
-        <ChakraLink as={Link} href="/admin/movies">
-          Movies
-        </ChakraLink>
-        <ChakraLink as={Link} href="/admin/persons">
-          Persons
-        </ChakraLink>
-      </Stack>
-    </Box>
+        <BsFilm /> Movies
+      </ChakraLink>
+      <ChakraLink
+        as={Link}
+        href="/admin/persons"
+        border="1px solid"
+        p={10}
+        borderRadius="md"
+        fontSize="2xl"
+      >
+        <BsPersonFill /> Persons
+      </ChakraLink>
+    </Stack>
   );
 }

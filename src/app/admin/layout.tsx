@@ -1,8 +1,8 @@
 import { Provider } from "@/components/ui/provider";
 import "../globals.css";
 import AuthGuard from "@/components/admin/AuthGuard";
-import { Toaster } from "@/components/ui/toaster";
 import { SessionProvider } from "next-auth/react";
+import Layout from "@/components/admin/Layout";
 
 export default function AdminLayout({
   children,
@@ -15,10 +15,9 @@ export default function AdminLayout({
         <Provider>
           <SessionProvider>
             <AuthGuard>
-              <>
+              <Layout>
                 {children}
-                <Toaster />
-              </>
+              </Layout>
             </AuthGuard>
           </SessionProvider>
         </Provider>
