@@ -15,13 +15,16 @@ import {
   Stack,
   Text,
   Combobox,
-  Table
+  Table,
+  Pagination,
+  ButtonGroup
 } from "@chakra-ui/react";
 import { toaster } from "@/components/ui/toaster";
 import { useAsync, useDebounce } from "react-use";
 import { useListCollection } from "@chakra-ui/react";
 import { BsPencil, BsTrash } from "react-icons/bs";
 import type { Movie } from "@/types";
+import { LuChevronLeft, LuChevronRight } from "react-icons/lu";
 
 type MovieForm = Omit<Movie, '_id' | 'backdrop_url'>
 
@@ -271,66 +274,6 @@ export default function AdminMovies() {
     setDeleteLoading(false);
   };
 
-  const renderPagination = () => {
-    if (totalPages <= 1) return null;
-
-    const getPageNumbers = () => {
-      const pages = [];
-      const maxVisiblePages = 5;
-      let startPage = Math.max(
-        1,
-        currentPage - Math.floor(maxVisiblePages / 2)
-      );
-      const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-      if (endPage - startPage + 1 < maxVisiblePages) {
-        startPage = Math.max(1, endPage - maxVisiblePages + 1);
-      }
-
-      for (let i = startPage; i <= endPage; i++) {
-        pages.push(i);
-      }
-      return pages;
-    };
-
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        gap={2}
-        mt={4}
-      >
-        <Button
-          size="sm"
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-        >
-          Previous
-        </Button>
-
-        {getPageNumbers().map((pageNum) => (
-          <Button
-            key={pageNum}
-            size="sm"
-            variant={pageNum === currentPage ? "solid" : "outline"}
-            onClick={() => handlePageChange(pageNum)}
-          >
-            {pageNum}
-          </Button>
-        ))}
-
-        <Button
-          size="sm"
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-        >
-          Next
-        </Button>
-      </Box>
-    );
-  };
-
   return (
     <>
       <Heading mb={6}>Movies</Heading>
@@ -412,7 +355,38 @@ export default function AdminMovies() {
           )}
         </Table.Body>
       </Table.Root>
-      {renderPagination()}
+      <Pagination.Root count={totalItems} pageSize={itemsPerPage} page={currentPage} mt={5} textAlign="center">
+        <ButtonGroup variant="ghost" size="sm" wrap="wrap">
+          <Pagination.PrevTrigger asChild>
+            <IconButton
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              <LuChevronLeft />
+            </IconButton>
+          </Pagination.PrevTrigger>
+
+          <Pagination.Items
+            render={(page) => (
+              <IconButton
+                variant={{ base: "ghost", _selected: "outline" }}
+                onClick={() => handlePageChange(page.value)}
+              >
+                {page.value}
+              </IconButton>
+            )}
+          />
+
+          <Pagination.NextTrigger asChild>
+            <IconButton
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              <LuChevronRight />
+            </IconButton>
+          </Pagination.NextTrigger>
+        </ButtonGroup>
+      </Pagination.Root>
 
       {/* Add Movie Modal */}
       <Dialog.Root
