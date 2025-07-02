@@ -165,7 +165,7 @@ export default function AdminPersons() {
             <Table.ColumnHeader>Name</Table.ColumnHeader>
             <Table.ColumnHeader>Interview Date</Table.ColumnHeader>
             <Table.ColumnHeader>Show</Table.ColumnHeader>
-            <Table.ColumnHeader>Actions</Table.ColumnHeader>
+            <Table.ColumnHeader></Table.ColumnHeader>
           </Table.Row>
         </Table.Header>
         <Table.Body>
@@ -192,7 +192,7 @@ export default function AdminPersons() {
                     : ""}
                 </Table.Cell>
                 <Table.Cell>{person.show ? "Yes" : "No"}</Table.Cell>
-                <Table.Cell>
+                <Table.Cell textAlign="right">
                   <IconButton
                     colorPalette="blue"
                     aria-label="Edit"
@@ -243,7 +243,7 @@ export default function AdminPersons() {
                           ...addForm,
                           name: item.name,
                           profile_url: item.profile_path
-                            ? `https://image.tmdb.org/t/p/w500${item.profile_path}`
+                            ? item.profile_path
                             : "",
                         });
                       }
@@ -268,7 +268,7 @@ export default function AdminPersons() {
                           </Box>
                         ) : (
                           collection.items.map((item) => (
-                            <Combobox.Item item={item} key={item.id}>
+                            <Combobox.Item item={item} key={item.id} justifyContent="initial">
                               <Image
                                 src={
                                   item.profile_path

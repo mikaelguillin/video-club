@@ -18,6 +18,8 @@ import {
   Combobox,
   useListCollection,
   Image,
+  SimpleGrid,
+  GridItem,
 } from "@chakra-ui/react";
 import { useAsync, useDebounce } from "react-use";
 import { toaster } from "@/components/ui/toaster";
@@ -202,88 +204,94 @@ export default function AdminPersonDetails() {
   return (
     <>
       <Heading mb={6}>Person Details</Heading>
-      <Stack gap={4} mb={8} maxW="md">
-        <Box>
-          <Text fontWeight="bold">Name</Text>
-          <Input name="name" value={form.name} onChange={handleChange} />
-        </Box>
-        <Box>
-          <Text fontWeight="bold">Interview Date</Text>
-          <Input
-            name="date"
-            type="date"
-            value={form.date}
-            onChange={handleChange}
-          />
-        </Box>
-        <Box>
-          <Text fontWeight="bold">Show</Text>
-          <input
-            name="show"
-            type="checkbox"
-            checked={form.show}
-            onChange={handleChange}
-          />
-        </Box>
-        <Box>
-          <Text fontWeight="bold">YouTube Video ID</Text>
-          <Input name="video" value={form.video} onChange={handleChange} />
-        </Box>
-        <Box>
-          <Text fontWeight="bold">Profile URL</Text>
-          <Input
-            name="profile_url"
-            value={form.profile_url}
-            onChange={handleChange}
-          />
-        </Box>
-        <Button colorPalette="green" onClick={handleSave}>
-          Save
-        </Button>
-      </Stack>
-      <Heading size="md" mb={4}>
-        Movies
-      </Heading>
-      <Button colorPalette="blue" mb={4} onClick={onOpen}>
-        Add Movie (from Database)
-      </Button>
-      <Table.Root variant="outline">
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeader>ID</Table.ColumnHeader>
-            <Table.ColumnHeader>Title</Table.ColumnHeader>
-            <Table.ColumnHeader>Year</Table.ColumnHeader>
-            <Table.ColumnHeader>Actions</Table.ColumnHeader>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {movies.length === 0 ? (
-            <Table.Row>
-              <Table.Cell colSpan={4} textAlign="center">
-                No movies found.
-              </Table.Cell>
-            </Table.Row>
-          ) : (
-            movies.map((movie) => (
-              <Table.Row key={movie._id}>
-                <Table.Cell>{movie._id}</Table.Cell>
-                <Table.Cell>{movie.translations.en.title}</Table.Cell>
-                <Table.Cell>{movie.year}</Table.Cell>
-                <Table.Cell>
-                  <IconButton
-                    aria-label="Remove"
-                    size="sm"
-                    colorPalette="red"
-                    onClick={() => handleRemoveMovie(movie._id)}
-                  >
-                    <BsTrash />
-                  </IconButton>
-                </Table.Cell>
+      <SimpleGrid columns={3} gap={10}>
+        <GridItem colSpan={1}>
+          <Stack gap={4} mb={8} maxW="md">
+            <Box>
+              <Text fontWeight="bold">Name</Text>
+              <Input name="name" value={form.name} onChange={handleChange} />
+            </Box>
+            <Box>
+              <Text fontWeight="bold">Interview Date</Text>
+              <Input
+                name="date"
+                type="date"
+                value={form.date}
+                onChange={handleChange}
+              />
+            </Box>
+            <Box>
+              <Text fontWeight="bold">Show</Text>
+              <input
+                name="show"
+                type="checkbox"
+                checked={form.show}
+                onChange={handleChange}
+              />
+            </Box>
+            <Box>
+              <Text fontWeight="bold">YouTube Video ID</Text>
+              <Input name="video" value={form.video} onChange={handleChange} />
+            </Box>
+            <Box>
+              <Text fontWeight="bold">Profile URL</Text>
+              <Input
+                name="profile_url"
+                value={form.profile_url}
+                onChange={handleChange}
+              />
+            </Box>
+            <Button colorPalette="green" onClick={handleSave}>
+              Save
+            </Button>
+          </Stack>
+        </GridItem>
+        <GridItem colSpan={2}>
+          <Heading size="md" mb={4}>
+            Movies
+          </Heading>
+          <Button colorPalette="blue" mb={4} onClick={onOpen}>
+            Add Movie (from Database)
+          </Button>
+          <Table.Root variant="outline">
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeader>ID</Table.ColumnHeader>
+                <Table.ColumnHeader>Title</Table.ColumnHeader>
+                <Table.ColumnHeader>Year</Table.ColumnHeader>
+                <Table.ColumnHeader></Table.ColumnHeader>
               </Table.Row>
-            ))
-          )}
-        </Table.Body>
-      </Table.Root>
+            </Table.Header>
+            <Table.Body>
+              {movies.length === 0 ? (
+                <Table.Row>
+                  <Table.Cell colSpan={4} textAlign="center">
+                    No movies found.
+                  </Table.Cell>
+                </Table.Row>
+              ) : (
+                movies.map((movie) => (
+                  <Table.Row key={movie._id}>
+                    <Table.Cell>{movie._id}</Table.Cell>
+                    <Table.Cell>{movie.translations.en.title}</Table.Cell>
+                    <Table.Cell>{movie.year}</Table.Cell>
+                    <Table.Cell textAlign="right">
+                      <IconButton
+                        aria-label="Remove"
+                        size="sm"
+                        colorPalette="red"
+                        onClick={() => handleRemoveMovie(movie._id)}
+                      >
+                        <BsTrash />
+                      </IconButton>
+                    </Table.Cell>
+                  </Table.Row>
+                ))
+              )}
+            </Table.Body>
+          </Table.Root>
+        </GridItem>
+      </SimpleGrid>
       <Dialog.Root
         placement="center"
         motionPreset="slide-in-bottom"
@@ -331,7 +339,11 @@ export default function AdminPersonDetails() {
                           collection.items.map((item) => (
                             <Combobox.Item item={item} key={item._id} justifyContent="initial">
                               <Image
-                                src={item.translations.en.poster_url}
+                                src={
+                                  item.translations.en.poster_url
+                                    ? `https://image.tmdb.org/t/p/w45${item.translations.en.poster_url}`
+                                    : "/placeholder.png"
+                                }
                                 alt=""
                                 height={67}
                                 width={45}

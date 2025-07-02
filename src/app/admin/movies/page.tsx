@@ -308,7 +308,7 @@ export default function AdminMovies() {
             <Table.ColumnHeader>Title</Table.ColumnHeader>
             <Table.ColumnHeader>Year</Table.ColumnHeader>
             <Table.ColumnHeader>Director</Table.ColumnHeader>
-            <Table.ColumnHeader>Actions</Table.ColumnHeader>
+            <Table.ColumnHeader></Table.ColumnHeader>
           </Table.Row>
         </Table.Header>
         <Table.Body>
@@ -331,7 +331,7 @@ export default function AdminMovies() {
                 <Table.Cell>{movie.translations?.en.title || ""}</Table.Cell>
                 <Table.Cell>{movie.year}</Table.Cell>
                 <Table.Cell>{movie.director}</Table.Cell>
-                <Table.Cell>
+                <Table.Cell textAlign="right">
                   <IconButton
                     colorPalette="blue"
                     aria-label="Edit"
@@ -426,14 +426,14 @@ export default function AdminMovies() {
                               title: item.title || "",
                               overview: item.overview || "",
                               poster_url: item.poster_path
-                                ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
+                                ? item.poster_path
                                 : "",
                             },
                             fr: {
                               title: frenchVersion.title,
                               overview: frenchVersion.overview,
                               poster_url: frenchVersion.poster_path
-                                ? `https://image.tmdb.org/t/p/w500${frenchVersion.poster_path}`
+                                ? frenchVersion.poster_path
                                 : "",
                             }
                           },

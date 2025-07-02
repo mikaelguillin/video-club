@@ -37,22 +37,21 @@ export default function PersonMoviesHeader({ person }: { person?: Person }) {
               margin={"0 .75em 0 0"}
             />
             <Heading size="3xl">
-              {/* {person.name}&apos;
-              {person.name.charAt(person.name.length - 1) === "s" ? "" : "s"}{" "}
-              selection */}
               {t('MoviesList.personSelection', { name: person.name })}
             </Heading>
           </div>
-          <Button
-            variant="outline"
-            ml="auto"
-            mt={{ base: 2, sm: 0 }}
-            asChild
-          >
-            <a href={`https://www.youtube.com/watch?v=${person.video}`} target="_blank">
-              🎬 {t('MoviesList.watchInterview')}
-            </a>
-          </Button>
+          {person.video && (
+            <Button
+              variant="outline"
+              ml="auto"
+              mt={{ base: 2, sm: 0 }}
+              asChild
+            >
+              <a href={`https://www.youtube.com/watch?v=${person.video}`} target="_blank">
+                🎬 {t('MoviesList.watchInterview')}
+              </a>
+            </Button>
+          )}
         </Box>
       ) : (
         <Flex mt="3" mb="3" alignItems="center">
