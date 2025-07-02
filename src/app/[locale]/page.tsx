@@ -1,4 +1,5 @@
 import PersonsList from "@/components/PersonsList";
+import { Tagline } from "@/components/Tagline";
 
 async function fetchPersons(page: number = 1, limit: number = 10) {
   const res = await fetch(
@@ -24,10 +25,13 @@ export default async function HomePage({
   const { items, pagination } = await fetchPersons(page, limit);
 
   return (
-    <PersonsList
-      initialItems={items}
-      initialPage={page}
-      initialPagination={pagination}
-    />
+    <>
+      <Tagline />
+      <PersonsList
+        initialItems={items}
+        initialPage={page}
+        initialPagination={pagination}
+      />
+    </>
   );
 }

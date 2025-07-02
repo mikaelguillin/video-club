@@ -3,7 +3,8 @@
     "back": "Retour"
   },
   "Home": {
-    "welcome": "Bienvenue au Vidéo Club !"
+    "welcome": "Bienvenue au Vidéo Club !",
+    "tagline": "Découvrez les films choisis par vos stars préférées dans l'émission <link>Vidéo Club de Konbini</link>"
   },
   "MoviesList": {
     "personSelection": "La sélection de {name}",

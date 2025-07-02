@@ -3,10 +3,11 @@
     "back": "Back"
   },
   "Home": {
-    "welcome": "Welcome to the Video Club!"
+    "welcome": "Welcome to the Video Club!",
+    "tagline": "Explore your favorite stars’ movie picks featured in <link>Konbini's Vidéo Club</link> show"
   },
   "MoviesList": {
-    "personSelection": "{name}'s selection",
+    "personSelection": "{name}'s movie picks",
     "watchInterview": "Watch the interview"
   },
   "MovieDetail": {
