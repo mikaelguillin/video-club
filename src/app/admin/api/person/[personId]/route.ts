@@ -28,13 +28,13 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ pers
         const db = mongoClient.db('video-club');
         const { personId } = await params;
         const body = await req.json();
-        const { name, profile_url, date, show } = body;
+        const { name, profile_url, date, video, show } = body;
         if (!name || !profile_url || !date) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
         const result = await db.collection('persons').updateOne(
             { _id: ObjectId.createFromHexString(personId) },
-            { $set: { name, profile_url, date, show: show !== undefined ? show : true } }
+            { $set: { name, profile_url, date: new Date(date), video, show: show !== undefined ? show : true } }
         );
         if (result.matchedCount === 0) {
             return NextResponse.json({ error: 'Person not found' }, { status: 404 });

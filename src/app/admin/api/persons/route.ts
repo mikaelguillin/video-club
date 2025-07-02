@@ -41,14 +41,15 @@ export async function POST(req: NextRequest) {
         if (!mongoClient) throw new Error('An error occurred while connecting to database');
         const db = mongoClient.db('video-club');
         const body = await req.json();
-        const { name, profile_url, date, show } = body;
+        const { name, profile_url, video, date, show } = body;
         if (!name || !profile_url || !date) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
         const person = {
             name,
             profile_url,
-            date,
+            date: new Date(date),
+            video,
             show: show !== undefined ? show : true,
         };
         const result = await db.collection('persons').insertOne(person);
