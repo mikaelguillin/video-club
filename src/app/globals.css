@@ -92,11 +92,6 @@ img {
   margin: 1em 0;
 }
 
-.person-movies-header .person-name {
-  display: flex;
-  align-items: center;
-}
-
 .movie-title {
   font-weight: bold;
   white-space: nowrap;

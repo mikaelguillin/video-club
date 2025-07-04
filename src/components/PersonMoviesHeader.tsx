@@ -1,11 +1,15 @@
 "use client";
 
 import {
+  AspectRatio,
   Box,
   Button,
+  CloseButton,
+  Dialog,
   Flex,
   Heading,
   Image,
+  Portal,
   SkeletonCircle,
   SkeletonText,
 } from "@chakra-ui/react";
@@ -21,12 +25,15 @@ export default function PersonMoviesHeader({ person }: { person?: Person }) {
       {person ? (
         <Box
           className="person-movies-header"
-          display={{
-            base: "block",
-            sm: "flex",
-          }}
+          display={{ md: "flex" }}
+          textAlign={{ mdDown: "center" }}
         >
-          <div className="person-name">
+          <Box
+            className="person-name"
+            display={{ md: "flex" }}
+            mb={{ mdDown: 4 }}
+            alignItems="center"
+          >
             <Image
               hideBelow="md"
               src={person.profile_url}
@@ -34,23 +41,44 @@ export default function PersonMoviesHeader({ person }: { person?: Person }) {
               border="1px solid #ddd"
               boxSize="80px"
               alt={person.name}
-              margin={"0 .75em 0 0"}
+              mr={3}
             />
             <Heading size="3xl">
               {t('MoviesList.personSelection', { name: person.name })}
             </Heading>
-          </div>
+          </Box>
           {person.video && (
-            <Button
-              variant="outline"
-              ml="auto"
-              mt={{ base: 2, sm: 0 }}
-              asChild
-            >
-              <a href={`https://www.youtube.com/watch?v=${person.video}`} target="_blank">
-                🎬 {t('MoviesList.watchInterview')}
-              </a>
-            </Button>
+            <Dialog.Root size="xl" placement="top" motionPreset="slide-in-bottom">
+              <Dialog.Trigger asChild>
+                <Button variant="outline" size="sm" ml="auto">
+                  🎬 {t('MoviesList.watchInterview')}
+                </Button>
+              </Dialog.Trigger>
+              <Portal>
+                <Dialog.Backdrop backgroundColor="blackAlpha.800" />
+                <Dialog.Positioner>
+                  <Dialog.Content backgroundColor="transparent" boxShadow="none">
+                    <Dialog.Header>
+                      <Dialog.CloseTrigger asChild color="white">
+                        <CloseButton size="sm" variant="plain" />
+                      </Dialog.CloseTrigger>
+                    </Dialog.Header>
+                    <Dialog.Body>
+                      <AspectRatio maxW="100%" ratio={16 / 9}>
+                        <iframe
+                          src={`https://www.youtube.com/embed/${person.video}?autoplay=1`}
+                          title="YouTube video player"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          referrerPolicy="strict-origin-when-cross-origin"
+                          allowFullScreen
+                        ></iframe>
+                      {/* </Box> */}
+                      </AspectRatio>
+                    </Dialog.Body>
+                  </Dialog.Content>
+                </Dialog.Positioner>
+              </Portal>
+            </Dialog.Root>
           )}
         </Box>
       ) : (
