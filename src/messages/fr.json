@@ -11,7 +11,8 @@
     "watchInterview": "Regarder l'interview"
   },
   "MovieDetail": {
-    "overview": "Synopsis"
+    "overview": "Synopsis",
+    "recommendedBy": "Recommandé par"
   },
   "Footer": {
     "seeCodeOnGithub": "Voir le code sur GitHub",
