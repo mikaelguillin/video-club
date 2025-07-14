@@ -9,7 +9,7 @@ import {
   SkeletonText,
   Avatar,
   Stack,
-  Link as ChakraLink,
+  Link as ChakraLink
 } from "@chakra-ui/react";
 import type { Movie } from "@video-club/types";
 import { useEffect, useState } from "react";
@@ -121,22 +121,30 @@ export default function MovieDetail({ initialMovie }: MovieDetailProps) {
           >
             {movie._id ? (
               <>
-                <Heading size="4xl" mb={4}>
+                <Heading size="4xl">
                   {title}{" "}
                   <span style={{ fontSize: ".7em" }}>({movie.year})</span>
                 </Heading>
-                <Heading size="2xl">{t("MovieDetail.overview")}</Heading>
+                <Text>
+                  {t("MovieDetail.directedBy", { name: movie.director })}
+                  <span>&nbsp;•&nbsp;</span>
+                  {movie.genres.map((genre) => genre.name).join(`, `)}
+                </Text>
+
+                <Heading size="2xl" as="h3" mt={8}>
+                  {t("MovieDetail.overview")}
+                </Heading>
                 <Text>{overview}</Text>
                 {recommenders.length > 0 && (
                   <Box mt={8}>
-                    <Heading size="2xl" mb={2}>
-                      {t("MovieDetail.recommendedBy")}
+                    <Heading size="2xl" mb={2} as="h3">
+                      {t("MovieDetail.pickedBy")}
                     </Heading>
                     <Stack direction="row" gap={4}>
                       {recommenders.map((person) => (
                         <ChakraLink
                           as={NextLink}
-                          key={person._id}
+                          key={`${person._id}`}
                           href={`/${locale}/person/${person._id}/movies`}
                           display="flex"
                           flexDirection="column"

@@ -46,7 +46,7 @@ export default function AdminPersonDetails() {
   const { collection, set } = useListCollection<Movie>({
     initialItems: [],
     itemToString: (item) => `${item.translations.en.title} (${item.year})`,
-    itemToValue: (item) => item._id,
+    itemToValue: (item) => `${item._id}`,
   });
 
   const [selectedMovie, setSelectedMovie] = useState<Movie>();
@@ -271,8 +271,8 @@ export default function AdminPersonDetails() {
                 </Table.Row>
               ) : (
                 movies.map((movie) => (
-                  <Table.Row key={movie._id}>
-                    <Table.Cell>{movie._id}</Table.Cell>
+                  <Table.Row key={`${movie._id}`}>
+                    <Table.Cell>{`${movie._id}`}</Table.Cell>
                     <Table.Cell>{movie.translations.en.title}</Table.Cell>
                     <Table.Cell>{movie.year}</Table.Cell>
                     <Table.Cell textAlign="right">
@@ -280,7 +280,7 @@ export default function AdminPersonDetails() {
                         aria-label="Remove"
                         size="sm"
                         colorPalette="red"
-                        onClick={() => handleRemoveMovie(movie._id)}
+                        onClick={() => handleRemoveMovie(`${movie._id}`)}
                       >
                         <BsTrash />
                       </IconButton>
@@ -337,7 +337,7 @@ export default function AdminPersonDetails() {
                           </Box>
                         ) : (
                           collection.items.map((item) => (
-                            <Combobox.Item item={item} key={item._id} justifyContent="initial">
+                            <Combobox.Item item={item} key={`${item._id}`} justifyContent="initial">
                               <Image
                                 src={
                                   item.translations.en.poster_url

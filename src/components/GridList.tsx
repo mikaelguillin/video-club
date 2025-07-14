@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { SimpleGrid, Skeleton } from "@chakra-ui/react";
 import { useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
+import { ObjectId } from "mongodb";
 
 interface PaginationResponse<T> {
   items: T[];
@@ -33,7 +34,7 @@ interface GridListProps<T> {
   };
 }
 
-export default function GridList<T extends { _id: string }>({
+export default function GridList<T extends { _id: ObjectId }>({
   fetchUrl,
   renderItem,
   initialLimit = 10,
@@ -132,7 +133,7 @@ export default function GridList<T extends { _id: string }>({
         gap="20px"
       >
         {items.map((item) => {
-          const isImageLoaded = loadedImages[item._id];
+          const isImageLoaded = loadedImages[`${item._id}`];
           return renderItem(item, isImageLoaded, handleImageLoad);
         })}
       </SimpleGrid>

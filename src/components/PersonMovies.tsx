@@ -36,12 +36,12 @@ export default function PersonMovies({
   ) => {
     const { title, poster_url } = movie.translations?.[locale] || {};
     return (
-      <Link href={`/movie/${movie._id}`} key={movie._id}>
+      <Link href={`/movie/${movie._id}`} key={`${movie._id}`}>
         <article className="movie-card">
           <Image
             src={`${TMDB_IMAGE_BASE}${poster_url}`}
             alt={title || ''}
-            onLoad={() => handleImageLoad(movie._id)}
+            onLoad={() => handleImageLoad(`${movie._id}`)}
             width={500}
             height={750}
             placeholder="blur"

@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
         if (!mongoClient) throw new Error('An error occurred while connecting to database');
         const db = mongoClient.db('video-club');
         const body = await req.json();
-        const { director, year, translations } = body;
+        const { director, year, translations, genre_ids_tmdb } = body;
         if (!director || !year || !translations || typeof translations !== 'object') {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
@@ -67,6 +67,7 @@ export async function POST(req: NextRequest) {
             director,
             year,
             translations,
+            genre_ids_tmdb
         };
         const result = await db.collection('movies').insertOne(movie);
         return NextResponse.json({ ...movie, _id: result.insertedId });

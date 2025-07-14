@@ -18,7 +18,7 @@ async function getUser(username: string): Promise<User | null> {
 
         if (user) {
             return {
-                _id: user._id.toString(),
+                _id: user._id,
                 username: user.username,
                 password: user.password,
                 email: user.email,
@@ -69,7 +69,7 @@ export const authConfig = {
                         const passwordsMatch = await bcrypt.compare(password, user.password);
                         if (passwordsMatch) {
                             return {
-                                id: user._id,
+                                id: `${user._id}`,
                                 username: user.username,
                                 email: user.email,
                                 role: user.role,

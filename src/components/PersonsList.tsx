@@ -27,12 +27,12 @@ export default function PersonsList({
     handleImageLoad: (id: string) => void
   ) => {
     return (
-      <Link href={`/person/${person._id}/movies`} key={person._id}>
+      <Link href={`/person/${person._id}/movies`} key={`${person._id}`}>
         <article className="person-card">
           <Image
             src={person.profile_url}
             alt={person.name}
-            onLoad={() => handleImageLoad(person._id)}
+            onLoad={() => handleImageLoad(`${person._id}`)}
             width={500}
             height={750}
             placeholder="blur"

@@ -11,8 +11,9 @@
     "watchInterview": "Watch the interview"
   },
   "MovieDetail": {
+    "directedBy": "Directed by {name}",
     "overview": "Overview",
-    "recommendedBy": "Recommended by"
+    "pickedBy": "Picked by"
   },
   "Footer": {
     "seeCodeOnGithub": "See the code on GitHub",

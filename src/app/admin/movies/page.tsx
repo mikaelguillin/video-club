@@ -26,7 +26,7 @@ import { BsPencil, BsTrash } from "react-icons/bs";
 import type { Movie } from "@/types";
 import { LuChevronLeft, LuChevronRight } from "react-icons/lu";
 
-type MovieForm = Omit<Movie, '_id' | 'backdrop_url'>
+type MovieForm = Omit<Movie, '_id' | 'backdrop_url' | 'genres'>
 
 const defaultMovieForm: MovieForm = {
   director: "",
@@ -34,6 +34,7 @@ const defaultMovieForm: MovieForm = {
   translations: {
     en: { title: "", overview: "", poster_url: "" },
   },
+  genre_ids_tmdb: []
 };
 
 type TmdbMovie = {
@@ -43,6 +44,7 @@ type TmdbMovie = {
   release_date?: string;
   poster_path?: string;
   original_language?: string;
+  genre_ids: number[];
   director?: string;
 };
 
@@ -204,7 +206,7 @@ export default function AdminMovies() {
   };
 
   const handleEditMovie = (movie: Movie) => {
-    setEditId(movie._id);
+    setEditId(`${movie._id}`);
     const translations: Record<
       string,
       { title: string; overview: string; poster_url: string }
@@ -326,8 +328,8 @@ export default function AdminMovies() {
             </Table.Row>
           ) : (
             movies.map((movie) => (
-              <Table.Row key={movie._id}>
-                <Table.Cell>{movie._id}</Table.Cell>
+              <Table.Row key={`${movie._id}`}>
+                <Table.Cell>{`${movie._id}`}</Table.Cell>
                 <Table.Cell>{movie.translations?.en.title || ""}</Table.Cell>
                 <Table.Cell>{movie.year}</Table.Cell>
                 <Table.Cell>{movie.director}</Table.Cell>
@@ -345,7 +347,7 @@ export default function AdminMovies() {
                     aria-label="Delete"
                     size="sm"
                     colorPalette="red"
-                    onClick={() => setDeleteId(movie._id)}
+                    onClick={() => setDeleteId(`${movie._id}`)}
                   >
                     <BsTrash />
                   </IconButton>
@@ -417,6 +419,7 @@ export default function AdminMovies() {
                         const frenchVersion = data[0].results[0];
                         setForm((prev) => ({
                           ...prev,
+                          genre_ids_tmdb: item.genre_ids,
                           year: item.release_date
                             ? item.release_date.slice(0, 4)
                             : prev.year,
