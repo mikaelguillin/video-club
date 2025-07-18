@@ -45,7 +45,7 @@ export default function PersonsList({
             }}
           />
           <Box className="card-info">
-            <Text>{person.name}</Text>
+            <Text className="person-name">{person.name}</Text>
           </Box>
         </article>
       </Link>

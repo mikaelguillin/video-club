@@ -25,13 +25,13 @@ export default async function HomePage({
   const { items, pagination } = await fetchPersons(page, limit);
 
   return (
-    <>
+    <div className="container">
       <Tagline />
       <PersonsList
         initialItems={items}
         initialPage={page}
         initialPagination={pagination}
       />
-    </>
+    </div>
   );
 }

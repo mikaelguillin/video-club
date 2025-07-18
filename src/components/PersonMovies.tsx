@@ -4,9 +4,10 @@ import type { Movie, Person } from "@video-club/types";
 import PersonMoviesHeader from "./PersonMoviesHeader";
 import GridList from "./GridList";
 import { TMDB_IMAGE_BASE } from "@/constants";
-import { Link } from '@/i18n/navigation';
+import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { useLocale } from "next-intl";
+import dynamic from "next/dynamic";
 
 interface PersonMoviesProps {
   personId: string;
@@ -19,6 +20,52 @@ interface PersonMoviesProps {
     limit: number;
     totalPages: number;
   };
+}
+
+const MovieFavoriteButton = dynamic(() => import("./MovieFavoriteButton"), {
+  ssr: false,
+});
+
+function MovieCard({
+  movie,
+  isImageLoaded,
+  handleImageLoad,
+  locale,
+}: {
+  movie: Movie;
+  isImageLoaded: boolean;
+  handleImageLoad: (id: string) => void;
+  locale: string;
+}) {
+  const { title, poster_url } = movie.translations?.[locale] || {};
+  return (
+    <Link href={`/movie/${movie._id}`} key={`${movie._id}`}>
+      <article className="movie-card" style={{ position: "relative" }}>
+        <MovieFavoriteButton movieId={`${movie._id}`} />
+        <Image
+          src={`${TMDB_IMAGE_BASE}${poster_url}`}
+          alt={title}
+          onLoad={() => handleImageLoad(`${movie._id}`)}
+          width={500}
+          height={750}
+          placeholder="blur"
+          blurDataURL="/placeholder.png"
+          priority
+          style={{
+            opacity: isImageLoaded ? 1 : 0,
+            transition: "opacity 0.3s",
+            willChange: "opacity",
+          }}
+        />
+        <Box className="card-info" hideBelow="sm">
+          <Text className="movie-title" title={title}>
+            {title}
+          </Text>
+          <Text color="#555">({movie.year})</Text>
+        </Box>
+      </article>
+    </Link>
+  );
 }
 
 export default function PersonMovies({
@@ -34,38 +81,19 @@ export default function PersonMovies({
     isImageLoaded: boolean,
     handleImageLoad: (id: string) => void
   ) => {
-    const { title, poster_url } = movie.translations?.[locale] || {};
     return (
-      <Link href={`/movie/${movie._id}`} key={`${movie._id}`}>
-        <article className="movie-card">
-          <Image
-            src={`${TMDB_IMAGE_BASE}${poster_url}`}
-            alt={title || ''}
-            onLoad={() => handleImageLoad(`${movie._id}`)}
-            width={500}
-            height={750}
-            placeholder="blur"
-            blurDataURL="/placeholder.png"
-            priority
-            style={{
-              opacity: isImageLoaded ? 1 : 0,
-              transition: "opacity 0.3s",
-              willChange: "opacity",
-            }}
-          />
-          <Box className="card-info" hideBelow="sm">
-            <Text className="movie-title" title={title}>
-              {title}
-            </Text>
-            <Text color="#555">({movie.year})</Text>
-          </Box>
-        </article>
-      </Link>
-    )
+      <MovieCard
+        key={`${movie._id}`}
+        movie={movie}
+        isImageLoaded={isImageLoaded}
+        handleImageLoad={handleImageLoad}
+        locale={locale}
+      />
+    );
   };
 
   return (
-    <>
+    <div className="container">
       <PersonMoviesHeader person={person} />
       <GridList<Movie>
         fetchUrl={`/api/person/${personId}/movies`}
@@ -74,6 +102,6 @@ export default function PersonMovies({
         initialPage={initialPage}
         initialPagination={initialPagination}
       />
-    </>
+    </div>
   );
 }

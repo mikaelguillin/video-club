@@ -6,9 +6,21 @@
     "welcome": "Bienvenue au Vidéo Club !",
     "tagline": "Découvrez les films choisis par vos stars préférées dans l'émission <link>Vidéo Club de Konbini</link>"
   },
+  "Menu": {
+    "celebrities": "Célébrités",
+    "myMovieCollection": "Ma collection de films",
+    "popularMovies": "Films populaires",
+    "availableSoon": "Bientôt disponible !" 
+  },
+  "FavoriteMoviesList": {
+    "title": "Ma collection de films",
+    "emptyMessage": "Votre collection de films est vide"
+  },
   "MoviesList": {
     "personSelection": "La sélection de {name}",
-    "watchInterview": "Regarder l'interview"
+    "watchInterview": "Regarder l'interview",
+    "addToFavorites": "Ajouter aux favoris",
+    "removeFromFavorites": "Supprimer des favoris"
   },
   "MovieDetail": {
     "directedBy": "Réalisé par {name}",

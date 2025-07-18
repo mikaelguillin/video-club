@@ -5,12 +5,12 @@ import { useTranslations } from "next-intl";
 export function Tagline() {
     const t = useTranslations();
     return (
-        <Text textAlign="center" mb={8}>
+        <Text fontSize="2xl" color="gray.700" textAlign="center" mt={20} mb={20}>
             {t.rich('Home.tagline', {
                 link: (chunks) => (
                 <Link
+                    color="black"
                     target="_blank"
-                    color="blue.600"
                     fontWeight="bold"
                     href="https://www.konbini.com/playlist/video-club/"
                 >

@@ -51,7 +51,7 @@ export default function PersonMoviesHeader({ person }: { person?: Person }) {
             <Dialog.Root size="xl" placement="top" motionPreset="slide-in-bottom">
               <Dialog.Trigger asChild>
                 <Button variant="outline" size="sm" ml="auto">
-                  🎬 {t('MoviesList.watchInterview')}
+                  🎬&nbsp;&nbsp;{t('MoviesList.watchInterview')}
                 </Button>
               </Dialog.Trigger>
               <Portal>
@@ -87,7 +87,7 @@ export default function PersonMoviesHeader({ person }: { person?: Person }) {
           <SkeletonText ml="3" noOfLines={1} width="300px" />
         </Flex>
       )}
-      <Button mb={3} variant="plain" onClick={() => router.back()}>
+      <Button mb={3} p={0} variant="plain" onClick={() => router.back()}>
         ‹ {t('Actions.back')}
       </Button>
     </>
