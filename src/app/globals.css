@@ -89,8 +89,8 @@ img {
   margin: 1em 0;
 }
 
-.person-name,
-.movie-title {
+.person-card .person-name,
+.movie-card .movie-title {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
