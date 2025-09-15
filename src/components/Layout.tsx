@@ -2,7 +2,6 @@
 
 import { Link, usePathname } from "@/i18n/navigation";
 import { Box, CloseButton, Heading, HStack, Portal, Text, VStack } from "@chakra-ui/react";
-import { BsGithub } from "react-icons/bs";
 import { Analytics } from "@vercel/analytics/react";
 import { useTranslations } from "next-intl";
 import { Tooltip } from "@/components/ui/tooltip";
@@ -141,13 +140,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <main className="main">{children}</main>
 
       <footer className="footer">
-        <a
-          href="https://github.com/mikaelguillin/video-club"
-          style={{ display: "inline-flex", alignItems: "center" }}
-        >
-          {t("Footer.seeCodeOnGithub")}
-          <BsGithub size={20} style={{ marginLeft: "5px" }} />
-        </a>
         <p>{t("Footer.notAnOfficialKonbiniWebsite")}</p>
       </footer>
       <Analytics />
