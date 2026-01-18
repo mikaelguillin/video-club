@@ -66,7 +66,7 @@ export default function MovieDetail({ initialMovie }: MovieDetailProps) {
 
   return (
     <>
-      <Box className="container">  
+      <Box className="container">
         <Button onClick={() => router.back()} mb={3} p={0} variant="plain">
           ‹ {t("Actions.back")}
         </Button>
@@ -84,8 +84,8 @@ export default function MovieDetail({ initialMovie }: MovieDetailProps) {
             : undefined
         }
       >
-          <Box className="movie-detail-card-inner">
-        <Box className="container" display={{ mdTo2xl: "flex" }}>
+        <Box className="movie-detail-card-inner">
+          <Box className="container" display={{ base: "flex", mdDown: "block" }}>
             <Box maxWidth={{ md: "50%" }} pt={5} pb={5} pr={5}>
               {poster_url ? (
                 <Box
@@ -102,6 +102,7 @@ export default function MovieDetail({ initialMovie }: MovieDetailProps) {
                     priority
                     placeholder="blur"
                     blurDataURL="/placeholder.png"
+                    style={{borderRadius: "10px"}}
                   />
                 </Box>
               ) : (
@@ -116,24 +117,25 @@ export default function MovieDetail({ initialMovie }: MovieDetailProps) {
 
             <Box
               className="movie-detail-card-text"
-              px="5"
               pb={5}
               pt={{ md: 10 }}
+              pl={{ md: 5 }}
+              pr={{ md: 5 }}
               flex={1}
             >
               {movie._id ? (
                 <>
-                  <Heading size="4xl">
-                    {title}{" "}
-                    <span style={{ fontSize: ".7em" }}>({movie.year})</span>
-                  </Heading>
-                  <MovieFavoriteButton movieId={`${movie._id}`} />
-                  <Text>
-                    {t("MovieDetail.directedBy", { name: movie.director })}
-                    <span>&nbsp;•&nbsp;</span>
-                    {movie.genres.map((genre) => genre.name).join(`, `)}
-                  </Text>
-
+                  <hgroup>
+                    <Heading size="4xl">
+                      {title}{" "}
+                      <span style={{ fontSize: ".7em" }}>({movie.year})</span>
+                    </Heading>
+                    <Text>
+                      {t("MovieDetail.directedBy", { name: movie.director })}
+                      <span>&nbsp;•&nbsp;</span>
+                      {movie.genres.map((genre) => genre.name).join(`, `)}
+                    </Text>
+                  </hgroup>
                   <Heading size="2xl" as="h3" mt={8}>
                     {t("MovieDetail.overview")}
                   </Heading>
@@ -165,13 +167,14 @@ export default function MovieDetail({ initialMovie }: MovieDetailProps) {
                       </Stack>
                     </Box>
                   )}
+                  <MovieFavoriteButton movieId={`${movie._id}`} />
                 </>
               ) : (
                 <SkeletonText noOfLines={10} />
               )}
             </Box>
-        </Box>
           </Box>
+        </Box>
       </Box>
     </>
   );
