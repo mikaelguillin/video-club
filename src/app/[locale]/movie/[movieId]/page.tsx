@@ -28,7 +28,7 @@ export async function generateMetadata({
         title: `${title} (${movie.year})`,
         description: overview,
         images: movie.poster_url
-          ? [`${process.env.NEXT_PUBLIC_TMDB_IMAGE_BASE}${movie.poster_url}`]
+          ? [{url: `${process.env.NEXT_PUBLIC_TMDB_IMAGE_BASE}${movie.poster_url}`}]
           : [],
         type: "video.movie",
       },

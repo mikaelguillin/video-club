@@ -42,6 +42,7 @@ export async function generateMetadata({
         : `Discover movies featuring ${name}`,
       openGraph: {
         title: `${name} - Movies`,
+        images: [{url: person.profile_url}],
         description: biography
           ? `${biography.substring(0, 160)}...`
           : `Discover movies featuring ${name}`,
@@ -50,6 +51,7 @@ export async function generateMetadata({
       twitter: {
         card: "summary",
         title: `${name} - Movies`,
+        images: [person.profile_url],
         description: biography
           ? `${biography.substring(0, 160)}...`
           : `Discover movies featuring ${name}`,
