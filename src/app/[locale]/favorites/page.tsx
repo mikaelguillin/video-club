@@ -58,12 +58,12 @@ export default function FavoritesPage() {
 
   return (
     <Box className="container">
-      <Button onClick={() => router.back()} mb={3} p={0} variant="plain">
-        ‹ {t("Actions.back")}
-      </Button>
       <Heading mb={6} size="3xl">
         {t("FavoriteMoviesList.title")}
       </Heading>
+      <Button onClick={() => router.back()} mb={3} p={0} variant="plain">
+        ‹ {t("Actions.back")}
+      </Button>
       {!loading && movies.length < 1 && (
         <EmptyState.Root>
           <EmptyState.Content>
