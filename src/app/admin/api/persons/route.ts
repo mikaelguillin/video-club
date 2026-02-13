@@ -12,9 +12,9 @@ export async function GET(req: NextRequest) {
         const limit = parseInt(searchParams.get('limit') || '20');
         const skip = (page - 1) * limit;
 
-        const total = await db.collection('persons').countDocuments({ show: true });
+        const total = await db.collection('persons').countDocuments();
         const persons = await db.collection('persons')
-            .find({ show: true })
+            .find()
             .sort({ date: -1 })
             .skip(skip)
             .limit(limit)
