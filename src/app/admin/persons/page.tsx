@@ -24,20 +24,15 @@ import { useRouter } from "next/navigation";
 import { useAsync, useDebounce } from "react-use";
 import { toaster } from "@/components/ui/toaster";
 import { BsPencil, BsTrash } from "react-icons/bs";
-
-interface Person {
-  _id: string;
-  tmdbId: number;
-  name: string;
-  profileImage: string;
-  date: string;
-  show: boolean;
-}
+import type { Person } from "@/types";
 
 type TMDBPerson = { id: number; name: string; profile_path?: string };
 
+// Person as it appears in API responses (with _id serialized as string)
+type PersonResponse = Omit<Person, '_id'> & { _id: string };
+
 export default function AdminPersons() {
-  const [persons, setPersons] = useState<Person[]>([]);
+  const [persons, setPersons] = useState<PersonResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [addForm, setAddForm] = useState({
     name: "",
