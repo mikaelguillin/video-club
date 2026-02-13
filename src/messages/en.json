@@ -27,6 +27,9 @@
     "overview": "Overview",
     "pickedBy": "Picked by"
   },
+  "PopularMovies": {
+    "title": "The most popular movies"
+  },
   "Footer": {
     "seeCodeOnGithub": "See the code on GitHub",
     "notAnOfficialKonbiniWebsite": "This is not an official website of Konbini."

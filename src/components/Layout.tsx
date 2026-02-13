@@ -1,10 +1,9 @@
 "use client";
 
 import { Link, usePathname } from "@/i18n/navigation";
-import { Box, CloseButton, Heading, HStack, Portal, Text, VStack } from "@chakra-ui/react";
+import { Box, CloseButton, Heading, HStack, Portal, VStack } from "@chakra-ui/react";
 import { Analytics } from "@vercel/analytics/react";
 import { useTranslations } from "next-intl";
-import { Tooltip } from "@/components/ui/tooltip";
 import {
   IconButton,
   Drawer
@@ -23,7 +22,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     setOpen: setMenuOpen
   } = useDisclosure();
 
-  function NavLinks({context}: {context: 'desktop' | 'mobile'}) {
+  function NavLinks() {
     return (
       <>
         <li>
@@ -36,35 +35,21 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </li>
         <li>
           <Link
+            href="/popular-movies"
+            className={pathname === "/popular-movies" ? "activeLink" : ""}
+            onClick={onMenuClose}
+          >
+            {t("Menu.popularMovies")}
+          </Link>
+        </li>
+        <li>
+          <Link
             href="/favorites"
             className={pathname === "/favorites" ? "activeLink" : ""}
             onClick={onMenuClose}
           >
             {t("Menu.myMovieCollection")}
           </Link>
-        </li>
-        <li>
-          {context === 'mobile' ? (
-            <>
-              <Box asChild color="gray.500">
-                <Link href="#">
-                  {t("Menu.popularMovies")}
-                </Link>
-              </Box>
-              <Text fontSize="md" textAlign="center" mt={2}>{t("Menu.availableSoon")}</Text>
-            </>
-          ) : (
-            <Tooltip
-              content={t("Menu.availableSoon")}
-              openDelay={100}
-            >
-              <Box asChild color="gray.500">
-                <Link href="#">
-                  {t("Menu.popularMovies")}
-                </Link>
-              </Box>
-            </Tooltip>
-          )}
         </li>
       </>
     )
@@ -85,7 +70,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </Heading>
             <Box as="nav" ml={10} display={{ base: "none", md: "block" }}>
               <HStack as="ul" fontWeight="bold" gap={7}>
-                <NavLinks context="desktop" />
+                <NavLinks />
               </HStack>
             </Box>
             <IconButton
@@ -127,7 +112,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     fontSize="3xl"
                     fontWeight="bold"
                   >
-                    <NavLinks context="mobile" />
+                    <NavLinks />
                   </VStack>
                 </Box>
               </Drawer.Body>
