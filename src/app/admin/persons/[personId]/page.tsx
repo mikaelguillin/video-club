@@ -39,6 +39,14 @@ export default function AdminPersonDetails() {
     profile_url: "",
   });
   const { open, onOpen, onClose } = useDisclosure();
+  const {
+    open: youtubeOpen,
+    onOpen: onYoutubeOpen,
+    onClose: onYoutubeClose,
+  } = useDisclosure();
+  const [youtubeLoading, setYoutubeLoading] = useState(false);
+  const [youtubeJson, setYoutubeJson] = useState("");
+  const [youtubeImportLoading, setYoutubeImportLoading] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [debouncedInputValue, setDebouncedInputValue] = useState("");
   useDebounce(() => setDebouncedInputValue(inputValue), 300, [inputValue]);
@@ -159,6 +167,92 @@ export default function AdminPersonDetails() {
     }
   };
 
+  const handleFetchFromYoutube = async () => {
+    if (!form.video?.trim()) {
+      toaster.create({
+        type: "error",
+        title: "Error",
+        description: "Please set a YouTube Video ID for this person first.",
+      });
+      return;
+    }
+    setYoutubeLoading(true);
+    setYoutubeJson("");
+    try {
+      const res = await fetch(
+        `/admin/api/person/${personId}/fetch-movies-from-youtube`
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        toaster.create({
+          type: "error",
+          title: "Error",
+          description: data.error || "Failed to fetch movies from YouTube",
+        });
+        return;
+      }
+      setYoutubeJson(
+        JSON.stringify(data.movies ?? [], null, 2)
+      );
+      onYoutubeOpen();
+    } finally {
+      setYoutubeLoading(false);
+    }
+  };
+
+  const handleImportYoutubeMovies = async () => {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(youtubeJson);
+    } catch {
+      toaster.create({
+        type: "error",
+        title: "Invalid JSON",
+        description: "The list is not valid JSON. Please fix it.",
+      });
+      return;
+    }
+    if (!Array.isArray(parsed)) {
+      toaster.create({
+        type: "error",
+        title: "Invalid format",
+        description: "The list must be a JSON array of movies.",
+      });
+      return;
+    }
+    setYoutubeImportLoading(true);
+    try {
+      const res = await fetch(
+        `/admin/api/person/${personId}/import-movies`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ movies: parsed }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        toaster.create({
+          type: "error",
+          title: "Error",
+          description: data.error || "Failed to import movies",
+        });
+        return;
+      }
+      onYoutubeClose();
+      const moviesRes = await fetch(`/admin/api/person/${personId}/movies`);
+      const moviesData = await moviesRes.json();
+      setMovies(moviesData.items);
+      toaster.create({
+        type: "success",
+        title: "Success",
+        description: `Imported ${data.linked ?? 0} movie(s), ${data.created ?? 0} new.`,
+      });
+    } finally {
+      setYoutubeImportLoading(false);
+    }
+  };
+
   const handleRemoveMovie = async (movieId: string) => {
     const res = await fetch(`/admin/api/person/${personId}/movies`, {
       method: "DELETE",
@@ -250,9 +344,19 @@ export default function AdminPersonDetails() {
           <Heading size="md" mb={4}>
             Movies
           </Heading>
-          <Button colorPalette="blue" mb={4} onClick={onOpen}>
-            Add Movie (from Database)
-          </Button>
+          <Stack direction="row" gap={2} mb={4}>
+            <Button colorPalette="blue" onClick={onOpen}>
+              Add Movie (from Database)
+            </Button>
+            <Button
+              colorPalette="green"
+              onClick={handleFetchFromYoutube}
+              loading={youtubeLoading}
+              disabled={!form.video?.trim()}
+            >
+              Fetch movies from Youtube
+            </Button>
+          </Stack>
           <Table.Root variant="outline">
             <Table.Header>
               <Table.Row>
@@ -368,6 +472,72 @@ export default function AdminPersonDetails() {
                   </Button>
                 </Stack>
               </Dialog.Body>
+            </Dialog.Content>
+          </Dialog.Positioner>
+        </Portal>
+      </Dialog.Root>
+
+      <Dialog.Root
+        placement="center"
+        open={youtubeOpen}
+        onOpenChange={(d: { open: boolean }) => {
+          if (!d.open) onYoutubeClose();
+        }}
+      >
+        <Portal>
+          <Dialog.Backdrop />
+          <Dialog.Positioner>
+            <Dialog.Content maxW="800px">
+              <Dialog.Header>
+                <Dialog.Title>Movies from YouTube – Review &amp; Import</Dialog.Title>
+                <Dialog.CloseTrigger asChild>
+                  <CloseButton size="sm" onClick={onYoutubeClose} />
+                </Dialog.CloseTrigger>
+              </Dialog.Header>
+              <Dialog.Body>
+                {youtubeLoading ? (
+                  <Box py={6} textAlign="center">
+                    <Spinner size="lg" />
+                    <Text mt={2}>Fetching movies from YouTube…</Text>
+                  </Box>
+                ) : (
+                  <>
+                    <Text mb={2} fontSize="sm" color="gray.600">
+                      Review and edit the list below, then click Import.
+                    </Text>
+                    <textarea
+                      value={youtubeJson}
+                      onChange={(e) => setYoutubeJson(e.target.value)}
+                      style={{
+                        fontFamily: "mono",
+                        fontSize: "14px",
+                        padding: "12px",
+                        borderRadius: "6px",
+                        border: "1px solid",
+                        minHeight: "320px",
+                        width: "100%",
+                        resize: "vertical",
+                        boxSizing: "border-box",
+                      }}
+                    />
+                  </>
+                )}
+              </Dialog.Body>
+              {!youtubeLoading && (
+                <Dialog.Footer>
+                  <Button variant="outline" onClick={onYoutubeClose}>
+                    Cancel
+                  </Button>
+                  <Button
+                    colorPalette="blue"
+                    onClick={handleImportYoutubeMovies}
+                    loading={youtubeImportLoading}
+                    disabled={!youtubeJson.trim()}
+                  >
+                    Import
+                  </Button>
+                </Dialog.Footer>
+              )}
             </Dialog.Content>
           </Dialog.Positioner>
         </Portal>
