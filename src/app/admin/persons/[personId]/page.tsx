@@ -11,6 +11,7 @@ import {
   Spinner,
   IconButton,
   Text,
+  Textarea,
   useDisclosure,
   Dialog,
   Portal,
@@ -24,6 +25,7 @@ import {
 import { useAsync, useDebounce } from "react-use";
 import { toaster } from "@/components/ui/toaster";
 import { BsTrash } from "react-icons/bs";
+import { RiSparkling2Line } from "react-icons/ri";
 import type { Movie, Person } from "@/types";
 
 export default function AdminPersonDetails() {
@@ -349,12 +351,13 @@ export default function AdminPersonDetails() {
               Add Movie (from Database)
             </Button>
             <Button
-              colorPalette="green"
+              background="blue.400"
               onClick={handleFetchFromYoutube}
               loading={youtubeLoading}
               disabled={!form.video?.trim()}
             >
-              Fetch movies from Youtube
+              <RiSparkling2Line />
+              Import Movies From Youtube
             </Button>
           </Stack>
           <Table.Root variant="outline">
@@ -505,20 +508,19 @@ export default function AdminPersonDetails() {
                     <Text mb={2} fontSize="sm" color="gray.600">
                       Review and edit the list below, then click Import.
                     </Text>
-                    <textarea
+                    <Textarea
                       value={youtubeJson}
-                      onChange={(e) => setYoutubeJson(e.target.value)}
-                      style={{
-                        fontFamily: "mono",
-                        fontSize: "14px",
-                        padding: "12px",
-                        borderRadius: "6px",
-                        border: "1px solid",
-                        minHeight: "320px",
-                        width: "100%",
-                        resize: "vertical",
-                        boxSizing: "border-box",
-                      }}
+                      onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                        setYoutubeJson(e.target.value)
+                      }
+                      fontFamily="mono"
+                      fontSize="sm"
+                      minH="320px"
+                      resize="vertical"
+                      bg="gray.50"
+                      borderColor="gray.200"
+                      _dark={{ bg: "gray.800", borderColor: "gray.600" }}
+                      style={{ fontVariantLigatures: "none" }}
                     />
                   </>
                 )}
