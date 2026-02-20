@@ -46,6 +46,11 @@ export default function AdminPersonDetails() {
     onOpen: onYoutubeOpen,
     onClose: onYoutubeClose,
   } = useDisclosure();
+  const {
+    open: youtubeConfirmOpen,
+    onOpen: onYoutubeConfirmOpen,
+    onClose: onYoutubeConfirmClose,
+  } = useDisclosure();
   const [youtubeLoading, setYoutubeLoading] = useState(false);
   const [youtubeJson, setYoutubeJson] = useState("");
   const [youtubeImportLoading, setYoutubeImportLoading] = useState(false);
@@ -169,7 +174,7 @@ export default function AdminPersonDetails() {
     }
   };
 
-  const handleFetchFromYoutube = async () => {
+  const openYoutubeConfirm = () => {
     if (!form.video?.trim()) {
       toaster.create({
         type: "error",
@@ -178,6 +183,10 @@ export default function AdminPersonDetails() {
       });
       return;
     }
+    onYoutubeConfirmOpen();
+  };
+
+  const handleYoutubeConfirmYes = async () => {
     setYoutubeLoading(true);
     setYoutubeJson("");
     try {
@@ -189,13 +198,13 @@ export default function AdminPersonDetails() {
         toaster.create({
           type: "error",
           title: "Error",
-          description: data.error || "Failed to fetch movies from YouTube",
+          description: data.error || "Failed to extract movies from YouTube",
         });
+        onYoutubeConfirmClose();
         return;
       }
-      setYoutubeJson(
-        JSON.stringify(data.movies ?? [], null, 2)
-      );
+      setYoutubeJson(JSON.stringify(data.movies ?? [], null, 2));
+      onYoutubeConfirmClose();
       onYoutubeOpen();
     } finally {
       setYoutubeLoading(false);
@@ -352,8 +361,7 @@ export default function AdminPersonDetails() {
             </Button>
             <Button
               background="blue.400"
-              onClick={handleFetchFromYoutube}
-              loading={youtubeLoading}
+              onClick={openYoutubeConfirm}
               disabled={!form.video?.trim()}
             >
               <RiSparkling2Line />
@@ -480,6 +488,56 @@ export default function AdminPersonDetails() {
         </Portal>
       </Dialog.Root>
 
+      {/* Confirmation modal: proceed to extract movies from YouTube */}
+      <Dialog.Root
+        placement="center"
+        open={youtubeConfirmOpen}
+        onOpenChange={(d: { open: boolean }) => {
+          if (!d.open && !youtubeLoading) onYoutubeConfirmClose();
+        }}
+      >
+        <Portal>
+          <Dialog.Backdrop />
+          <Dialog.Positioner>
+            <Dialog.Content>
+              <Dialog.Header>
+                <Dialog.Title>Import movies from YouTube</Dialog.Title>
+                {!youtubeLoading && (
+                  <Dialog.CloseTrigger asChild>
+                    <CloseButton size="sm" onClick={onYoutubeConfirmClose} />
+                  </Dialog.CloseTrigger>
+                )}
+              </Dialog.Header>
+              <Dialog.Body>
+                {youtubeLoading ? (
+                  <Stack gap={4} py={2} align="center">
+                    <Spinner size="lg" />
+                    <Text>
+                      Extracting the movies from the YouTube video…
+                    </Text>
+                  </Stack>
+                ) : (
+                  <>
+                    <Text>
+                      You are about to extract all the movies mentioned in the
+                      YouTube video. Do you want to proceed?
+                    </Text>
+                    <Stack direction="row" gap={2} mt={4} justifyContent="flex-end">
+                      <Button variant="outline" onClick={onYoutubeConfirmClose}>
+                        No
+                      </Button>
+                      <Button colorPalette="blue" onClick={handleYoutubeConfirmYes}>
+                        Yes
+                      </Button>
+                    </Stack>
+                  </>
+                )}
+              </Dialog.Body>
+            </Dialog.Content>
+          </Dialog.Positioner>
+        </Portal>
+      </Dialog.Root>
+
       <Dialog.Root
         placement="center"
         open={youtubeOpen}
@@ -498,17 +556,10 @@ export default function AdminPersonDetails() {
                 </Dialog.CloseTrigger>
               </Dialog.Header>
               <Dialog.Body>
-                {youtubeLoading ? (
-                  <Box py={6} textAlign="center">
-                    <Spinner size="lg" />
-                    <Text mt={2}>Fetching movies from YouTube…</Text>
-                  </Box>
-                ) : (
-                  <>
-                    <Text mb={2} fontSize="sm" color="gray.600">
-                      Review and edit the list below, then click Import.
-                    </Text>
-                    <Textarea
+                <Text mb={2} fontSize="sm" color="gray.600">
+                  Review and edit the list below, then click Import.
+                </Text>
+                <Textarea
                       value={youtubeJson}
                       onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                         setYoutubeJson(e.target.value)
@@ -522,11 +573,8 @@ export default function AdminPersonDetails() {
                       _dark={{ bg: "gray.800", borderColor: "gray.600" }}
                       style={{ fontVariantLigatures: "none" }}
                     />
-                  </>
-                )}
               </Dialog.Body>
-              {!youtubeLoading && (
-                <Dialog.Footer>
+              <Dialog.Footer>
                   <Button variant="outline" onClick={onYoutubeClose}>
                     Cancel
                   </Button>
@@ -539,7 +587,6 @@ export default function AdminPersonDetails() {
                     Import
                   </Button>
                 </Dialog.Footer>
-              )}
             </Dialog.Content>
           </Dialog.Positioner>
         </Portal>
