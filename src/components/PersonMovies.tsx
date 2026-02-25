@@ -5,12 +5,12 @@ import PersonMoviesHeader from "./PersonMoviesHeader";
 import GridList from "./GridList";
 import { TMDB_IMAGE_BASE } from "@/constants";
 import { Link } from "@/i18n/navigation";
+import { movieToSlug } from "@/lib/slug";
 import Image from "next/image";
 import { useLocale } from "next-intl";
 import dynamic from "next/dynamic";
 
 interface PersonMoviesProps {
-  personId: string;
   person: Person;
   initialItems: Movie[];
   initialPage: number;
@@ -39,7 +39,7 @@ function MovieCard({
 }) {
   const { title, poster_url } = movie.translations?.[locale] || {};
   return (
-    <Link href={`/movie/${movie._id}`} key={`${movie._id}`}>
+    <Link href={`/movie/${movieToSlug(movie, locale)}`} key={`${movie._id}`}>
       <article className="movie-card" style={{ position: "relative" }}>
         <MovieFavoriteButton movieId={`${movie._id}`} />
         <Image
@@ -69,7 +69,6 @@ function MovieCard({
 }
 
 export default function PersonMovies({
-  personId,
   person,
   initialItems,
   initialPage,
@@ -96,7 +95,7 @@ export default function PersonMovies({
     <div className="container">
       <PersonMoviesHeader person={person} />
       <GridList<Movie>
-        fetchUrl={`/api/person/${personId}/movies`}
+        fetchUrl={`/api/person/${person._id}/movies`}
         renderItem={renderMovie}
         initialItems={initialItems}
         initialPage={initialPage}

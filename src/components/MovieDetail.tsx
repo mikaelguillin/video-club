@@ -1,5 +1,6 @@
 "use client";
 import { TMDB_IMAGE_BASE } from "@/constants";
+import { personToSlug, extractIdFromSlug } from "@/lib/slug";
 import {
   Box,
   Button,
@@ -33,7 +34,7 @@ export default function MovieDetail({ initialMovie }: MovieDetailProps) {
   const t = useTranslations();
   const locale = useLocale();
   const params = useParams();
-  const movieId = params?.movieId as string;
+  const movieSlug = params?.movieSlug as string;
   const [movie, setMovie] = useState<Movie>(initialMovie || ({} as Movie));
   const [recommenders, setRecommenders] = useState<Person[]>([]);
   const router = useRouter();
@@ -41,6 +42,7 @@ export default function MovieDetail({ initialMovie }: MovieDetailProps) {
   useEffect(() => {
     const fetchMovie = async () => {
       try {
+        const movieId = extractIdFromSlug(movieSlug);
         const response = await fetch(`/api/movie/${movieId}?locale=${locale}`);
         const movieData = await response.json();
         setMovie(movieData);
@@ -48,10 +50,11 @@ export default function MovieDetail({ initialMovie }: MovieDetailProps) {
         console.error("Error fetching movie:", error);
       }
     };
-    if (movieId && !initialMovie) fetchMovie();
+    if (movieSlug && !initialMovie) fetchMovie();
 
     const fetchRecommenders = async () => {
       try {
+        const movieId = extractIdFromSlug(movieSlug);
         const response = await fetch(`/api/movie/${movieId}/recommendations`);
         const data = await response.json();
         setRecommenders(data);
@@ -59,8 +62,8 @@ export default function MovieDetail({ initialMovie }: MovieDetailProps) {
         console.error("Error fetching recommenders:", error);
       }
     };
-    if (movieId) fetchRecommenders();
-  }, [movieId, initialMovie, locale]);
+    if (movieSlug) fetchRecommenders();
+  }, [movieSlug, initialMovie, locale]);
 
   const { title, overview, poster_url } = movie.translations?.[locale] || {};
 
@@ -102,7 +105,7 @@ export default function MovieDetail({ initialMovie }: MovieDetailProps) {
                     priority
                     placeholder="blur"
                     blurDataURL="/placeholder.png"
-                    style={{borderRadius: "10px"}}
+                    style={{ borderRadius: "10px" }}
                   />
                 </Box>
               ) : (
@@ -150,7 +153,7 @@ export default function MovieDetail({ initialMovie }: MovieDetailProps) {
                           <ChakraLink
                             as={NextLink}
                             key={`${person._id}`}
-                            href={`/${locale}/person/${person._id}/movies`}
+                            href={`/${locale}/person/${personToSlug(person)}/movies`}
                             display="flex"
                             flexDirection="column"
                             alignItems="center"

@@ -1,7 +1,9 @@
 import MovieDetail from "@/components/MovieDetail";
 import { Metadata } from "next";
+import { extractIdFromSlug } from "@/lib/slug";
 
-async function fetchMovie(movieId: string, locale: string) {
+async function fetchMovie(movieSlug: string, locale: string) {
+  const movieId = extractIdFromSlug(movieSlug);
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/api/movie/${movieId}?locale=${locale}`,
     { cache: "no-store" }
@@ -13,12 +15,12 @@ async function fetchMovie(movieId: string, locale: string) {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ movieId: string; locale: string }>;
+  params: Promise<{ movieSlug: string; locale: string }>;
 }): Promise<Metadata> {
-  const { movieId, locale } = await params;
+  const { movieSlug, locale } = await params;
 
   try {
-    const movie = await fetchMovie(movieId, locale);
+    const movie = await fetchMovie(movieSlug, locale);
     const { title, overview } = movie.translations?.[locale] || {};
 
     return {
@@ -28,7 +30,7 @@ export async function generateMetadata({
         title: `${title} (${movie.year})`,
         description: overview,
         images: movie.poster_url
-          ? [{url: `${process.env.NEXT_PUBLIC_TMDB_IMAGE_BASE}${movie.poster_url}`}]
+          ? [{ url: `${process.env.NEXT_PUBLIC_TMDB_IMAGE_BASE}${movie.poster_url}` }]
           : [],
         type: "video.movie",
       },
@@ -52,12 +54,11 @@ export async function generateMetadata({
 export default async function MovieDetailPage({
   params,
 }: {
-  params: Promise<{ movieId: string; locale: string }>;
+  params: Promise<{ movieSlug: string; locale: string }>;
 }) {
-  const { movieId, locale } = await params;
+  const { movieSlug, locale } = await params;
 
-  // Pre-fetch movie data for better performance and SEO
-  const movie = await fetchMovie(movieId, locale);
+  const movie = await fetchMovie(movieSlug, locale);
 
   return <MovieDetail initialMovie={movie} />;
 }

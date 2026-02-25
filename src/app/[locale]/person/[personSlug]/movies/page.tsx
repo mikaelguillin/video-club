@@ -1,12 +1,14 @@
 import PersonMovies from "@/components/PersonMovies";
 import { Metadata } from "next";
+import { extractIdFromSlug } from "@/lib/slug";
 
 async function fetchPersonMovies(
-  personId: string,
+  personSlug: string,
   locale: string,
   page: number = 1,
   limit: number = 10
 ) {
+  const personId = extractIdFromSlug(personSlug);
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/api/person/${personId}/movies?page=${page}&limit=${limit}&locale=${locale}`,
     { cache: "no-store" }
@@ -15,7 +17,8 @@ async function fetchPersonMovies(
   return res.json();
 }
 
-async function fetchPerson(personId: string) {
+async function fetchPerson(personSlug: string) {
+  const personId = extractIdFromSlug(personSlug);
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/api/person/${personId}`,
     { cache: "no-store" }
@@ -27,12 +30,12 @@ async function fetchPerson(personId: string) {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ personId: string; }>;
+  params: Promise<{ personSlug: string }>;
 }): Promise<Metadata> {
-  const { personId } = await params;
+  const { personSlug } = await params;
 
   try {
-    const person = await fetchPerson(personId);
+    const person = await fetchPerson(personSlug);
     const { name, biography } = person || {};
 
     return {
@@ -42,7 +45,7 @@ export async function generateMetadata({
         : `Discover movies featuring ${name}`,
       openGraph: {
         title: `${name} - Movies`,
-        images: [{url: person.profile_url}],
+        images: [{ url: person.profile_url }],
         description: biography
           ? `${biography.substring(0, 160)}...`
           : `Discover movies featuring ${name}`,
@@ -69,7 +72,7 @@ export default async function PersonMoviesPage({
   params,
   searchParams,
 }: {
-  params: Promise<{ personId: string; locale: string }>;
+  params: Promise<{ personSlug: string; locale: string }>;
   searchParams?: Promise<{ page?: string }>;
 }) {
   const awaitedSearchParams = await searchParams;
@@ -78,16 +81,15 @@ export default async function PersonMoviesPage({
     : 1;
   const limit = 10;
 
-  const { personId, locale } = await params;
+  const { personSlug, locale } = await params;
 
   const [person, { items, pagination }] = await Promise.all([
-    fetchPerson(personId),
-    fetchPersonMovies(personId, locale, page, limit),
+    fetchPerson(personSlug),
+    fetchPersonMovies(personSlug, locale, page, limit),
   ]);
 
   return (
     <PersonMovies
-      personId={personId}
       person={person}
       initialItems={items}
       initialPage={page}

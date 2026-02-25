@@ -1,5 +1,6 @@
 "use client";
 import { Link } from '@/i18n/navigation';
+import { personToSlug } from "@/lib/slug";
 import type { Person } from "@video-club/types";
 import GridList from "./GridList";
 import { Box, Text } from "@chakra-ui/react";
@@ -27,7 +28,7 @@ export default function PersonsList({
     handleImageLoad: (id: string) => void
   ) => {
     return (
-      <Link href={`/person/${person._id}/movies`} key={`${person._id}`}>
+      <Link href={`/person/${personToSlug(person)}/movies`} key={`${person._id}`}>
         <article className="person-card">
           <Image
             src={person.profile_url}

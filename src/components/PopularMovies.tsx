@@ -5,6 +5,7 @@ import type { Movie } from "@video-club/types";
 import GridList from "./GridList";
 import { TMDB_IMAGE_BASE } from "@/constants";
 import { Link } from "@/i18n/navigation";
+import { movieToSlug } from "@/lib/slug";
 import Image from "next/image";
 import { useLocale } from "next-intl";
 import dynamic from "next/dynamic";
@@ -48,7 +49,7 @@ function PopularMovieCard({
   const persons = movie.persons ?? [];
 
   return (
-    <Link href={`/movie/${movie._id}`} key={`${movie._id}`}>
+    <Link href={`/movie/${movieToSlug(movie, locale)}`} key={`${movie._id}`}>
       <article className="movie-card popular-movie-card" style={{ position: "relative" }}>
         <MovieFavoriteButton movieId={`${movie._id}`} />
         <Image
