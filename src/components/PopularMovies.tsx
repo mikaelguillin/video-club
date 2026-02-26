@@ -44,9 +44,7 @@ function PopularMovieCard({
   handleImageLoad: (id: string) => void;
   locale: string;
 }) {
-  const t = useTranslations();
   const { title, poster_url } = movie.translations?.[locale] || {};
-  const persons = movie.persons ?? [];
 
   return (
     <Link href={`/movie/${movieToSlug(movie, locale)}`} key={`${movie._id}`}>
@@ -73,28 +71,6 @@ function PopularMovieCard({
           </Text>
           <Text color="#555">({movie.year})</Text>
         </Box>
-        {persons.length > 0 && (
-          <Box
-            className="popular-movies-hover"
-            position="absolute"
-            bottom={0}
-            left={0}
-            right={0}
-            bg="blackAlpha.800"
-            color="white"
-            fontSize="sm"
-            py={2}
-            px={3}
-            borderBottomRadius="0.5em"
-            opacity={0}
-            transition="opacity 0.2s"
-          >
-            <Text fontWeight="bold" mb={1}>
-              {t("MovieDetail.pickedBy")}
-            </Text>
-            <Text>{persons.map((p) => p.name).join(", ")}</Text>
-          </Box>
-        )}
       </article>
     </Link>
   );
