@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
         const total = await db.collection('persons').countDocuments({ show: true });
         const persons = await db.collection('persons')
             .find({ show: true })
-            .sort({ date: -1 })
+            .sort({ date: -1, _id: 1 })
             .skip(skip)
             .limit(limit)
             .toArray();
