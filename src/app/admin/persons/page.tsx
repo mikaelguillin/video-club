@@ -68,13 +68,8 @@ export default function AdminPersons() {
       set([]);
       return;
     }
-    const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-    const res = await fetch(
-      `https://api.themoviedb.org/3/search/person?&query=${encodeURIComponent(
-        debouncedInputValue
-      )}`,
-      { headers: { Authorization: `Bearer ${apiKey}` } }
-    );
+    const params = new URLSearchParams({ query: debouncedInputValue });
+    const res = await fetch(`/admin/api/tmdb/persons?${params}`);
     const data = await res.json();
     set(data.results);
   }, [debouncedInputValue, set]);

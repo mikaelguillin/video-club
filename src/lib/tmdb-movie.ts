@@ -1,8 +1,8 @@
 const TMDB_BASE = "https://api.themoviedb.org/3";
 
 function getAuthHeader(): string {
-  const key = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-  if (!key) throw new Error("NEXT_PUBLIC_TMDB_API_KEY is not set");
+  const key = process.env.TMDB_API_KEY;
+  if (!key) throw new Error("TMDB_API_KEY is not set");
   return `Bearer ${key}`;
 }
 

@@ -5,11 +5,10 @@ const options = {};
 
 let mongoClient: MongoClient | null = null;
 
-if (!process.env.MONGODB_URI) {
-    throw new Error('Please add your Mongo URI to .env.local');
-}
-
 export async function connectToDB() {
+    if (!process.env.MONGODB_URI) {
+        throw new Error('Please add your Mongo URI to .env.local');
+    }
     if (mongoClient) {
         return { mongoClient };
     }

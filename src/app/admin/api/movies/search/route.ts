@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectToDB } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 
+function escapeRegex(s: string): string {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 export async function GET(req: NextRequest) {
     try {
         const { mongoClient } = await connectToDB();
@@ -18,11 +22,12 @@ export async function GET(req: NextRequest) {
         // Build search query
         let query = {};
         if (search.trim()) {
+            const safeSearch = escapeRegex(search.trim());
             query = {
                 $or: [
-                    { 'translations.en.title': { $regex: search, $options: 'i' } },
-                    { 'translations.fr.title': { $regex: search, $options: 'i' } },
-                    { director: { $regex: search, $options: 'i' } },
+                    { 'translations.en.title': { $regex: safeSearch, $options: 'i' } },
+                    { 'translations.fr.title': { $regex: safeSearch, $options: 'i' } },
+                    { director: { $regex: safeSearch, $options: 'i' } },
                 ]
             };
         }

@@ -14,6 +14,9 @@ export async function GET(
         const person = await db
             .collection('persons')
             .findOne({ _id: ObjectId.createFromHexString(personId) });
+        if (!person) {
+            return NextResponse.json({ error: 'Person not found' }, { status: 404 });
+        }
         return NextResponse.json(person);
     } catch (error) {
         console.error('Error', error);

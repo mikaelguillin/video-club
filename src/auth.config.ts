@@ -43,12 +43,15 @@ export const authConfig = {
             const isOnAdmin = nextUrl.pathname.startsWith('/admin');
             const pathname = nextUrl.pathname;
 
+            // Redirect authenticated users away from login page
+            if (pathname === '/admin/login' && isLoggedIn) {
+                return Response.redirect(new URL('/admin', nextUrl));
+            }
+
             // Handle admin authentication
             if (isOnAdmin) {
                 if (isLoggedIn) return true;
                 return false; // Redirect unauthenticated users to login page
-            } else if (isLoggedIn && pathname === '/admin/login') {
-                return Response.redirect(new URL('/admin', nextUrl));
             }
             return true;
         },

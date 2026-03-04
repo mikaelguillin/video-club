@@ -9,7 +9,7 @@ export async function GET() {
         const movies = await db
             .collection('movies')
             .find({})
-            .sort({ name: -1 })
+            .sort({ year: -1 })
             .toArray();
         return NextResponse.json(movies);
     } catch (error) {

@@ -80,13 +80,9 @@ export default function AdminMovies() {
   );
 
   const fetchMovie = async (language: string, year?: string) => {
-    const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-    let url = `https://api.themoviedb.org/3/search/movie?&query=${encodeURIComponent(
-        debouncedInputValueEn
-      )}&language=${language}`;
-
-    if(year) url += `&year=${year}`;
-    const res = await fetch(url, { headers: { Authorization: `Bearer ${apiKey}` } });
+    const params = new URLSearchParams({ query: debouncedInputValueEn, language });
+    if (year) params.set('year', year);
+    const res = await fetch(`/admin/api/tmdb/movies?${params}`);
     return res.json();
   }
 
